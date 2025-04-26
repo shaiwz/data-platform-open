@@ -1,0 +1,13 @@
+*/logs/*
+logs/*
+
+*/target/
+target
+.idea
+*.iml
+
+.vscode
+
+*.DS_Store
+
+d:/
