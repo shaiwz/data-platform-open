@@ -5,7 +5,7 @@
 ## 预计五月份发布（待专利公示时），关注Star不迷路，我们的目标是在一个平台上完成对数据的所有操作。
 
 官网：https://***/home <br>
-后端代码地址：https://gitee.com/shaiwz/data-platform-front-open <br>
+前端代码地址：https://gitee.com/shaiwz/data-platform-front-open <br>
 项目展示地址：http://dataplatform.cn/login
 
 ##### 联系方式：
