@@ -2,13 +2,15 @@
 
 #### 以数据为舟，驭流而上，让大数据如流水般自由汇聚、智能流转，零代码构建您的数字未来！
 
-## 预计五月份发布（待专利公示时），关注Star不迷路，我们的目标是在一个平台上完成对数据的所有操作。
+## 关注Star不迷路，我们的目标是在一个平台上完成对数据的所有操作。
 
-官网：https://***/home <br>
+## 本项目已申请外观专利+发明专利，未经明确书面授权，任何单位或个人不得对本软件进行抄袭、复制、修改、分发、逆向工程、商业用途等任何形式的非法使用。违者将面临人民币 100 万元的法定罚款及可能的法律追责。举报侵权行为可获得实际罚款金额 40% 的现金奖励。
+
+官网：https://shaiwz.com/home <br>
 前端代码地址：https://gitee.com/shaiwz/data-platform-front-open <br>
 项目展示地址：http://dataplatform.cn/login
 
-##### 联系方式：
+##### 举报、咨询联系方式：
 
 - QQ：761945125
 - Email：761945125@qq.com
@@ -55,7 +57,13 @@
 
 #### 数据流画布
 
-待专利全部公示时展示
+支持在一个画布里面完成数据同步，清洗，过滤、报表数据生成等任何操作，全程不需要写任何代码。
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/8pmibq.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+发布服务器资源可控，自动容错，节点支持动态扩容，服务节点越多，性能越好。支持多版本，支持回滚。
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/G4Lydk.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
 #### 数据流实时运行日志
 
