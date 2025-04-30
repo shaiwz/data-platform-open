@@ -129,4 +129,61 @@
 
 <img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/eqhKvQ.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-#### 等等还有若干功能，待发布后揭晓！
+#### 查询模板
+
+通过查询模板可以快速创建查询任务，支持多种数据源。不用后端开发再去编写查询报表、对外提供数据查询接口。
+
+##### 查询模板列表
+
+支持版本控制、密钥、权限配置等
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/xLF1a7.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+##### 查询模板创建
+
+支持动态条件
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/iQg63A.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+支持限流、记录日志、缓存等配置
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/smOzXG.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+预览页面有示例文档，以及快速测试，测试没问题可以点击发布，外部服务即可调用。
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/MDjMXp.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+##### 查询模板调用日志
+
+支持完善的日志记录，日志可跟踪。
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/PTHd2a.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+日志详情
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/S2exjI.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+#### 等等还有若干功能，欢迎联系作者进行体验
+
+## 性能测试
+
+| 模式     | 硬件规格  | 实例数量 | 速率（单任务） |
+|--------|-------|------|---------|
+| 监听-流处理 | 6c12g | 1    | 30058/s |
+| 批处理    | 6c12g | 1    | 60268/s |
+
+## 整体架构
+
+所有服务实例均支持动态锁扩容
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/hAwrA7.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
+## 业务价值
+
+| 同步方案          | 人员最低要求     | 单表预估工时（同步+过滤+转换） |
+|---------------|------------|------------------|
+| 硬编码方式查询-过滤-写入 | 中高级开发人员    | 1人天              |
+| FlinkCDC      | 专业大数据源开发人员 | 0.5人天            |
+| Canal         | 中高级开发人员    | 0.5人天            |
+| DataX         | 中高级开发人员    | 0.5人天            |
+| 数据流平台         | 初级开发或初级运维  | 10分钟（拖拖拽拽）       |
