@@ -113,7 +113,7 @@
 
 ##### 数据对齐创建
 
-配置合适触发，以及策略对齐策略：数量一致、内容一致、随机数量，对比时间范围等等配置。
+配置何时触发，以及策略对齐策略：数量一致、内容一致、随机数量，对比时间范围等等配置。
 
 <img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/Y66Y0S.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
@@ -176,7 +176,7 @@
 
 所有服务实例均支持动态锁扩容
 
-<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/hAwrA7.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/EVYZif.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
 ## 业务价值
 
