@@ -55,7 +55,7 @@
 
 查看有哪些数据流任务
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/JamJc1.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/dpa9WI.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
 ##### 数据流画布
 
