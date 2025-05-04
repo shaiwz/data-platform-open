@@ -47,17 +47,17 @@
 
 ### 数据管理
 
-### 数据流
+#### 数据流
 
 支持随意构建数据流向，拖拖拽拽完成数据同步，清洗，过滤等任何操作，全程不需要写任何代码。
 
-#### 数据流列表
+##### 数据流列表
 
 查看有哪些数据流任务
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/JamJc1.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-#### 数据流画布
+##### 数据流画布
 
 支持在一个画布里面完成数据同步，清洗，过滤、报表数据生成等任何操作，全程不需要写任何代码。
 
@@ -67,7 +67,7 @@
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/G4Lydk.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-#### 数据流实时运行日志
+##### 数据流实时运行日志
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/4EtS6z.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
@@ -77,27 +77,23 @@
 
 ##### 数据源创建
 
+支持分表算法、健康检查、脱敏配置
+
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/QoEp4g.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
 ##### 数据源控制台
 
-不同数据源支持不同的控制台
-
-###### 数据源创建
-
-支持分表算法、健康检查、脱敏配置
+不同数据源支持不同的控制台，例如MySQL、StarRocks、Doris、Oracle等控制台样式如下
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/CcV9Uf.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-###### MySQL、StarRocks、Doris、Oracle等
+Kafka控制台
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/cq7I6f.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-###### Kafka
-
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/rN7kLO.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
-##### ElasticSearch
+ElasticSearch控制台
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/vGE5zJ.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
