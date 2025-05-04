@@ -23,7 +23,7 @@
 
 综合看板，方便查看系统运行情况，数据一致性，数据源健康率，以及告警信息等。
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/oO9691.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+![首页](https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/oO9691.png)
 
 #### 数据流统计
 
