@@ -61,7 +61,7 @@
 
 支持在一个画布里面完成数据同步，清洗，过滤、报表数据生成等任何操作，全程不需要写任何代码。
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/8pmibq.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/qXGKgj.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
 发布服务器资源可控，自动容错，节点支持动态扩容，服务节点越多，性能越好。支持多版本，支持回滚。
 
