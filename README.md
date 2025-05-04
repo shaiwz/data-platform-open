@@ -71,6 +71,10 @@
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/4EtS6z.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
+##### 数据流发布记录
+
+<img src="https://oss-xuxin.oss-cn-beijing.aliyuncs.com/dp/img/NMdFJ5.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+
 #### 数据源
 
 支持若干种数据源，插件方式，便于扩展其他数据源
