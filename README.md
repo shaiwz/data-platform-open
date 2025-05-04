@@ -176,7 +176,7 @@ ElasticSearch控制台
 
 ## 整体架构
 
-所有服务实例均支持动态锁扩容
+所有服务实例均支持动态缩、扩容
 
 <img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/EVYZif.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
 
