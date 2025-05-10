@@ -1,0 +1,106 @@
+spring:
+  output:
+    ansi:
+      enabled: always
+  threads:
+    virtual:
+      enabled: true
+  main:
+    keep-alive: true
+
+management:
+  info:
+    os:
+      enabled: true
+    env:
+      enabled: true
+    java:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+    access:
+      default: read_only
+  endpoint:
+    startup:
+      access: read_only
+    shutdown:
+      access: read_only
+    env:
+      show-values: always
+      access: read_only
+    configprops:
+      show-values: always
+      access: read_only
+    health:
+      probes:
+        enabled: true
+        add-additional-paths: true
+      show-components: always
+      show-details: always
+      group:
+        readiness:
+          include: "*"
+        liveness:
+          include: "*"
+      access: read_only
+    logfile:
+      external-file: /logs/${spring.application.name}/${HOSTNAME:HOSTNAME}.log
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+
+  observations:
+    key-values:
+      service.name: ${spring.application.name}
+      service.namespace: ${NAMESPACE:dp}
+      application: ${spring.application.name}
+      namespace: ${NAMESPACE:dp}
+      hostname: ${HOSTNAME:HOSTNAME}
+      instance: ${HOSTNAME:None}
+
+    annotations:
+      enabled: true
+    r2dbc:
+      include-parameter-values: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+    propagation:
+      type: W3C
+
+  opentelemetry:
+    resource-attributes:
+      service.name: ${spring.application.name}
+      service.namespace: ${NAMESPACE:dp}
+      application: ${spring.application.name}
+      namespace: ${NAMESPACE:dp}
+      hostname: ${HOSTNAME:HOSTNAME}
+      instance: ${HOSTNAME:None}
+
+  otlp:
+    metrics:
+      export:
+        url: ${OTLP_METRICS_ENDPOINT:http://otel-collector:4318/v1/metrics}
+        enabled: ${OTLP_METRICS_ENABLED:false}
+        step: 5s
+    tracing:
+      endpoint: ${OTLP_TRACING_ENDPOINT:http://otel-collector:4318/v1/traces}
+      export:
+        enabled: ${OTLP_TRACING_ENABLED:false}
+    logging:
+      endpoint: ${OTLP_LOGGING_ENDPOINT:http://otel-collector:4318/v1/logs}
+      export:
+        enabled: ${OTLP_LOGGING_ENABLED:false}
+
+server:
+  shutdown: graceful
+
+
+dp:
+  password:
+    secret-key: ${DP_PASSWORD_SECRET_KEY:0200300020000001}

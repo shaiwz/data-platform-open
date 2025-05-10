@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: data-platform-web
+
+  config:
+    import:
+      - optional:classpath:application-common.yml
+      - optional:classpath:application-redis.yml
+      - optional:classpath:application-mysql.yml
+      - optional:classpath:application-rabbitmq.yml
+
+  profiles:
+    active: dev
+
+server:
+  servlet:
+    context-path: ${SERVLET_CONTEXT_PATH:/dp-web}
+
+

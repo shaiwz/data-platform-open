@@ -1,0 +1,15 @@
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    listener:
+      simple:
+        concurrency: 5 # 固定消费者数量
+        max-concurrency: 30 # 最大消费者数量
+        retry:
+          max-attempts: 2 #重试次数
+          enabled: true #启用重试
+          initial-interval: 3000 #重试间隔时间（单位毫秒）
+        default-requeue-rejected: false #重试次数超过上面的设置之后是否丢弃（false不丢弃时需要写相应代码将该消息加入死信队列）
