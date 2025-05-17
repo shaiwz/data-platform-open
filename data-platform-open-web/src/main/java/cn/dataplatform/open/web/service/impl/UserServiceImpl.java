@@ -1,8 +1,8 @@
 package cn.dataplatform.open.web.service.impl;
 
-
 import cn.dataplatform.open.common.component.OrikaMapper;
 import cn.dataplatform.open.common.enums.RedisKey;
+import cn.dataplatform.open.common.enums.Status;
 import cn.dataplatform.open.common.exception.ApiException;
 import cn.dataplatform.open.common.util.HttpServletUtils;
 import cn.dataplatform.open.common.vo.base.PageBase;
@@ -17,6 +17,7 @@ import cn.dataplatform.open.web.store.mapper.UserMapper;
 import cn.dataplatform.open.web.util.MD5Utils;
 import cn.dataplatform.open.web.vo.user.*;
 import cn.dataplatform.open.web.vo.workspace.WorkspaceData;
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,10 +30,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -189,6 +187,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         Long id = userUpdateRequest.getId();
         User user = this.getById(id);
+        if (user == null) {
+            throw new ApiException("用户不存在");
+        }
+        String userStatus = user.getStatus();
         this.orikaMapper.map(userUpdateRequest, user);
         String password = userUpdateRequest.getPassword();
         if (null != password && !password.isEmpty()) {
@@ -196,8 +198,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(encryptedPassword);
         }
         this.updateById(user);
-        if (Objects.equals(userData.getId(), id)) {
-            // 更新自己
+        // 如果用户启用状态改为停用，强制下线
+        if (Objects.equals(userStatus, Status.ENABLE.name()) &&
+                Objects.equals(userUpdateRequest.getStatus(), Status.DISABLE.name())) {
+            // 删除redis中的token
+            RMapCache<Long, String> mapCache = this.redissonClient.getMapCache(RedisKey.USER_TOKEN.getKey());
+            String token = mapCache.get(id);
+            if (StrUtil.isNotBlank(token)) {
+                RBucket<UserData> bucket = this.redissonClient.getBucket(RedisKey.TOKEN.build(token));
+                bucket.delete();
+                mapCache.remove(id);
+            }
+        } else if (Objects.equals(userData.getId(), id)) {
+            // 第二种情况，用户修改了自己的信息，更新缓存中的信息
             String authorization = HttpServletUtils.getRequest().getHeader(HttpHeaders.AUTHORIZATION);
             RBucket<UserData> bucket = this.redissonClient.getBucket(RedisKey.TOKEN.build(authorization));
             this.orikaMapper.map(user, userData);
@@ -219,6 +232,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new ApiException("用户不存在");
         }
         this.removeById(id);
+        // 如果用户有登录，用户强制下线
+        RMapCache<Long, String> mapCache = this.redissonClient.getMapCache(RedisKey.USER_TOKEN.getKey());
+        String token = mapCache.get(id);
+        if (StrUtil.isNotBlank(token)) {
+            RBucket<UserData> bucket = this.redissonClient.getBucket(RedisKey.TOKEN.build(token));
+            mapCache.remove(id);
+            bucket.delete();
+        }
         return true;
     }
 
@@ -273,6 +294,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(encryptedNewPassword);
         this.updateById(user);
         return true;
+    }
+
+    /**
+     * 根据id列表获取用户列表
+     *
+     * @param ids id列表
+     * @return 用户列表
+     */
+    @Override
+    public Map<Long, User> getAllUserMapByIds(Collection<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return Collections.emptyMap();
+        }
+        List<User> users = this.baseMapper.listAllByIds(ids);
+        if (CollUtil.isEmpty(users)) {
+            return Collections.emptyMap();
+        }
+        return users.stream().collect(Collectors.toMap(User::getId,
+                user -> user, (v1, v2) -> v1,
+                () -> new LinkedHashMap<>(users.size())));
     }
 
 

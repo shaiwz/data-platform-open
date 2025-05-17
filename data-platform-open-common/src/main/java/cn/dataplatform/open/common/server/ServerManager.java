@@ -1,6 +1,5 @@
 package cn.dataplatform.open.common.server;
 
-
 import cn.dataplatform.open.common.alarm.scene.ServiceOfflineNoticeScene;
 import cn.dataplatform.open.common.alarm.scene.ServiceOnlineNoticeScene;
 import cn.dataplatform.open.common.body.AlarmSceneMessageBody;
@@ -81,15 +80,22 @@ public class ServerManager implements ApplicationListener<ServletWebServerInitia
      */
     @Override
     public void onApplicationEvent(@NonNull ServletWebServerInitializedEvent event) {
-        log.info("服务启动成功,开始注册服务信息");
-        RMapCache<String, Server> mapCache = redissonClient.getMapCache(RedisKey.SERVERS.build(applicationName)
-                , new JsonJacksonCodec());
+        String requestId = UUID.randomUUID().toString(true);
+        try {
+            MDC.put(Constant.REQUEST_ID, requestId);
+            log.info("服务启动成功,开始注册服务信息");
+            // 服务启动通知
+            AlarmSceneMessageBody alarmSceneMessageBody = new AlarmSceneMessageBody(new ServiceOnlineNoticeScene());
+            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmSceneMessageBody));
+        } finally {
+            MDC.remove(Constant.REQUEST_ID);
+        }
         String hostAddress = IPUtils.SERVER_IP;
-        String instanceId = hostAddress + ":" + port;
-        AlarmSceneMessageBody alarmSceneMessageBody = new AlarmSceneMessageBody(new ServiceOnlineNoticeScene());
-        this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmSceneMessageBody));
+        String instanceId = hostAddress + ":" + this.port;
+        RMapCache<String, Server> mapCache = this.redissonClient.getMapCache(RedisKey.SERVERS.build(this.applicationName)
+                , new JsonJacksonCodec());
+        // 注册服务实例，并定期心跳
         this.scheduledExecutorService.scheduleAtFixedRate(() -> {
-            String requestId = UUID.randomUUID().toString(true);
             MDC.put(Constant.REQUEST_ID, requestId);
             try {
                 Server server = mapCache.get(instanceId);
@@ -138,19 +144,23 @@ public class ServerManager implements ApplicationListener<ServletWebServerInitia
     @Override
     public void destroy() {
         String requestId = UUID.randomUUID().toString(true);
-        MDC.put(Constant.REQUEST_ID, requestId);
-        log.info("服务即将关闭,开始服务实例注销");
-        this.scheduledExecutorService.shutdown();
-        String instanceId = this.instanceId();
-        RMapCache<Object, Server> mapCache = this.redissonClient.getMapCache(RedisKey.SERVERS.build(this.applicationName)
-                , new JsonJacksonCodec());
-        Server server = mapCache.get(instanceId);
-        server.setStatus(ServerStatus.OFFLINE);
-        mapCache.put(instanceId, server);
-        log.info("服务实例注销成功,服务实例ID:{}", instanceId);
-        // 发送服务下线告警
-        AlarmSceneMessageBody alarmSceneMessageBody = new AlarmSceneMessageBody(new ServiceOfflineNoticeScene());
-        this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmSceneMessageBody));
+        try {
+            MDC.put(Constant.REQUEST_ID, requestId);
+            log.info("服务即将关闭,开始服务实例注销");
+            this.scheduledExecutorService.shutdown();
+            String instanceId = this.instanceId();
+            RMapCache<Object, Server> mapCache = this.redissonClient.getMapCache(RedisKey.SERVERS.build(this.applicationName)
+                    , new JsonJacksonCodec());
+            Server server = mapCache.get(instanceId);
+            server.setStatus(ServerStatus.OFFLINE);
+            mapCache.put(instanceId, server);
+            log.info("服务实例注销成功,服务实例ID:{}", instanceId);
+            // 发送服务下线告警
+            AlarmSceneMessageBody alarmSceneMessageBody = new AlarmSceneMessageBody(new ServiceOfflineNoticeScene());
+            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmSceneMessageBody));
+        } finally {
+            MDC.remove(Constant.REQUEST_ID);
+        }
     }
 
     /**

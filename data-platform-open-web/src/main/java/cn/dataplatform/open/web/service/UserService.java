@@ -8,6 +8,9 @@ import cn.dataplatform.open.web.vo.user.*;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.validation.Valid;
 
+import java.util.Collection;
+import java.util.Map;
+
 /**
  * @author DaoDao
  */
@@ -68,5 +71,14 @@ public interface UserService extends IService<User> {
      * @return r
      */
     Boolean changePassword(@Valid ChangePasswordRequest request);
+
+
+    /**
+     * 根据id列表获取用户列表
+     *
+     * @param ids id列表
+     * @return 用户列表
+     */
+    Map<Long, User> getAllUserMapByIds(Collection<Long> ids);
 
 }

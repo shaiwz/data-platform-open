@@ -26,6 +26,12 @@ public enum DataSourceType {
     RABBIT_MQ("RabbitMQ"),
     ROCKET_MQ("RocketMQ"),
     POSTGRESQL("PostgreSQL"),
+    /**
+     * 达梦
+     */
+    DAMENG("Dameng"),
+    CLICKHOUSE("ClickHouse"),
+    HIVE("Hive"),
     ;
 
     private final String value;

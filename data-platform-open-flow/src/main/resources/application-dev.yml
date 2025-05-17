@@ -1,0 +1,75 @@
+server:
+  port: ${SERVER_PORT:9500}
+spring:
+  lifecycle:
+    # 强制要求,最低6分钟,see debeziumEngine stop 默认5分钟,防止丢数据,但是需要等待其他组件完结
+    # 部署时k8s关闭钩子切记需要配置
+    timeout-per-shutdown-phase: 6m
+  datasource:
+    dynamic:
+      strict: true
+      primary: data_platform
+      datasource:
+        data_platform:
+          url: ${MYSQL_URL:jdbc:mysql://localhost:3306/data_platform?useSSL=false&serverTimezone=UTC&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&autoReconnect=true}
+          username: ${MYSQL_USERNAME:root}
+          password: ${MYSQL_PASSWORD:123456}
+          driver-class-name: com.mysql.cj.jdbc.Driver
+          type: com.zaxxer.hikari.HikariDataSource
+          hikari:
+            minimum-idle: 20 # 最小空闲连接数
+            # 特殊配置
+            maximum-pool-size: 200 # 最大连接数
+            connection-timeout: 10000 # 连接超时时间
+            idle-timeout: 10000 # 空闲连接超时时间
+            max-lifetime: 1800000 # 连接最大生命周期
+            validation-timeout: 3000 # 连接校验超时时间
+            connection-test-query: SELECT 1 # 连接校验查询语句
+            connection-init-sql: SELECT 1
+            leak-detection-threshold: 5000  # 帮助检测连接泄漏
+            keepalive-time: 30000
+      aop:
+        enabled: true
+  data:
+    # redis配置
+    redis:
+      database: ${REDIS_DATABASE:3}
+      host: ${REDIS_HOST:localhost}
+      password: ${REDIS_PASSWORD:123456}
+      port: ${REDIS_PORT:6379}
+      lettuce:
+        pool:
+          # 特殊配置
+          max-active: 400
+          min-idle: 30
+          max-idle: 100
+      timeout: 10000
+  # 线程池配置
+  task:
+    execution:
+      pool:
+        core-size: 24
+        max-size: 100
+  servlet:
+    multipart:
+      max-file-size: 4MB
+
+# sharding-jdbc配置
+sharding:
+  datasource:
+    data_platform:
+      props:
+        sql-show: true
+      tables:
+        idempotent:
+          actual-data-nodes: data_platform.idempotent_${0..9}
+          table-strategy:
+            standard:
+              sharding-column: id
+              sharding-algorithm-name: idempotent_inline
+      shardingAlgorithms:
+        idempotent_inline:
+          type: INLINE
+          props:
+            algorithm-expression: idempotent_${(id.hashCode() & Integer.MAX_VALUE) % 10}
+
