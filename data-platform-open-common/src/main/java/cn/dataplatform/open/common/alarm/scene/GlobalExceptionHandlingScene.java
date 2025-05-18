@@ -35,13 +35,13 @@ public class GlobalExceptionHandlingScene implements Scene {
      */
     private String exceptionStackTrace;
 
-    public GlobalExceptionHandlingScene(Exception exception) {
-        if (exception == null) {
+    public GlobalExceptionHandlingScene(Throwable throwable) {
+        if (throwable == null) {
             return;
         }
-        this.exceptionName = exception.getClass().getSimpleName();
-        this.exceptionMessage = exception.getMessage();
-        this.exceptionStackTrace = ExceptionUtil.stacktraceToString(exception, 2000);
+        this.exceptionName = throwable.getClass().getSimpleName();
+        this.exceptionMessage = throwable.getMessage();
+        this.exceptionStackTrace = ExceptionUtil.stacktraceToString(throwable, 2000);
     }
 
 
