@@ -1,7 +1,6 @@
 package cn.dataplatform.open.web.exception;
 
 
-
 import cn.dataplatform.open.common.alarm.scene.GlobalExceptionHandlingScene;
 import cn.dataplatform.open.common.body.AlarmSceneMessageBody;
 import cn.dataplatform.open.common.constant.Constant;
@@ -11,6 +10,7 @@ import cn.dataplatform.open.common.exception.ApiException;
 import cn.dataplatform.open.common.vo.base.BaseResult;
 import cn.dataplatform.open.web.config.Context;
 import cn.dataplatform.open.web.vo.workspace.WorkspaceData;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.StringPool;
 import com.mysql.cj.jdbc.exceptions.CommunicationsException;
@@ -64,11 +64,14 @@ public class ApiExceptionHandler {
     public Object exception(Exception e) {
         BaseResult result = BaseResult.err();
         log.error("Exception", e);
-        // 抛出的未知异常 加上RequestId
-        result.setMessage(ErrorCode.DP_500.getMsg().concat(StringPool.AT) + MDC.get(Constant.REQUEST_ID));
+        Throwable rootCause = ExceptionUtil.getRootCause(e);
+        result.setMessage(Optional.ofNullable(rootCause.getMessage())
+                .map(m -> StrUtil.maxLength(m, 500))
+                .orElse(ErrorCode.DP_500.getMsg())
+                .concat(StringPool.AT) + MDC.get(Constant.REQUEST_ID));
         result.setCode(ErrorCode.DP_500.getCode());
         // 告警消息
-        AlarmSceneMessageBody alarmMessageBody = new AlarmSceneMessageBody(new GlobalExceptionHandlingScene(e));
+        AlarmSceneMessageBody alarmMessageBody = new AlarmSceneMessageBody(new GlobalExceptionHandlingScene(rootCause));
         alarmMessageBody.setWorkspaceCode(Optional.ofNullable(Context.getWorkspace()).map(WorkspaceData::getCode).orElse(null));
         this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmMessageBody));
         return result;

@@ -45,7 +45,7 @@ public class TokenInterceptor implements AsyncHandlerInterceptor {
     private RedissonClient redissonClient;
 
     /**
-     * token拦截器
+     * Token拦截器
      *
      * @param request  request
      * @param response response

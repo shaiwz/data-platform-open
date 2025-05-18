@@ -9,6 +9,7 @@ import cn.dataplatform.open.common.util.IPUtils;
 import cn.dataplatform.open.web.config.Context;
 import cn.dataplatform.open.web.interceptor.TokenInterceptor;
 import cn.dataplatform.open.web.service.LoginService;
+import cn.dataplatform.open.web.service.UserLoginLogService;
 import cn.dataplatform.open.web.service.UserService;
 import cn.dataplatform.open.web.store.entity.User;
 import cn.dataplatform.open.web.store.entity.UserLoginLog;
@@ -24,6 +25,7 @@ import cn.hutool.http.useragent.UserAgent;
 import cn.hutool.http.useragent.UserAgentUtil;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBucket;
 import org.redisson.api.RMapCache;
 import org.redisson.api.RedissonClient;
@@ -44,6 +46,7 @@ import java.util.concurrent.TimeUnit;
  * @date 2025/1/19
  * @since 1.0.0
  */
+@Slf4j
 @Service
 public class LoginServiceImpl implements LoginService {
 
@@ -59,6 +62,8 @@ public class LoginServiceImpl implements LoginService {
     private UserService userService;
     @Resource
     private UserLoginLogMapper userLoginLogMapper;
+    @Resource
+    private UserLoginLogService userLoginLogService;
 
     /**
      * 登录
@@ -81,6 +86,19 @@ public class LoginServiceImpl implements LoginService {
         // 用户是否停用
         if (Objects.equals(user.getStatus(), Status.DISABLE.name())) {
             throw new ApiException("用户已停用，请联系管理员！");
+        }
+        UserLoginLog loginLog = this.userLoginLogService.lambdaQuery()
+                .eq(UserLoginLog::getUserId, user.getId())
+                .orderByDesc(UserLoginLog::getCreateTime)
+                .last(Constant.LIMIT_ONE)
+                .one();
+        if (loginLog != null) {
+            String ip = loginLog.getIp();
+            String requestIp = IPUtils.getRequestIp();
+            if (!ip.equals(requestIp)) {
+                log.warn("用户登录IP异常,上次登录IP:{},本次登录IP:{}", ip, requestIp);
+                // 后续改为手机验证码方式二次确认？
+            }
         }
         String token = JWTUtils.genderToken(String.valueOf(user.getId()), this.issuer, user.getUsername());
         // set redis

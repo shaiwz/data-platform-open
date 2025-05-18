@@ -26,6 +26,14 @@ import org.springframework.web.servlet.AsyncHandlerInterceptor;
 public class TraceInterceptor implements AsyncHandlerInterceptor {
 
 
+    /**
+     * 处理requestId
+     *
+     * @param request  请求
+     * @param response 响应
+     * @param handler  处理器
+     * @return 是否继续处理请求
+     */
     @Override
     public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         // 如果上游系统传入requestId则使用上游系统的requestId
