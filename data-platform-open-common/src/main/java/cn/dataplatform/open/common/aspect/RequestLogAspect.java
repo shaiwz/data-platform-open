@@ -46,11 +46,12 @@ public class RequestLogAspect {
         try {
             sb.append("┏━━━━━━━━请求日志━━━━━━━━\n");
             sb.append("┣ 链接: ").append(HttpServletUtils.getRequest().getRequestURL()).append("\n");
-            Object[] objects = this.argsExcludeClass(joinPoint.getArgs());
-            sb.append("┣ 参数: ").append(this.objectMapper.writeValueAsString(objects)).append("\n");
+            Object[] args = this.argsExcludeClass(joinPoint.getArgs());
+            String requestAsString = this.objectMapper.writeValueAsString(args);
+            sb.append("┣ 参数: ").append(StrUtil.maxLength(requestAsString, 5000)).append("\n");
             Object proceed = joinPoint.proceed();
-            String valueAsString = this.objectMapper.writeValueAsString(proceed);
-            sb.append("┣ 结果: ").append(StrUtil.maxLength(valueAsString, 5000)).append("\n");
+            String responseAsString = this.objectMapper.writeValueAsString(proceed);
+            sb.append("┣ 结果: ").append(StrUtil.maxLength(responseAsString, 5000)).append("\n");
             return proceed;
         } catch (Throwable throwable) {
             sb.append("┣ 异常: ").append(throwable).append("\n");
