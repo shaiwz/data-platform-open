@@ -79,11 +79,13 @@ public class UserWorkspaceServiceImpl extends ServiceImpl<UserWorkspaceMapper, U
         ListWorkspaceMemberRequest query = pageRequest.getQuery();
         Long workspaceId = query.getWorkspaceId();
         PageBase page = pageRequest.getPage();
-        Long total = this.userWorkspaceMapper.totalMember(workspaceId, query.getUsername(), query.getType());
+        Long total = this.userWorkspaceMapper.totalMember(workspaceId, query.getUsername(), null,
+                query.getType());
         if (total == 0) {
             return new PageResult<>(Collections.emptyList(), page.getCurrent(), page.getSize(), 0L);
         }
-        List<UserData> userDataList = this.userWorkspaceMapper.listMember(workspaceId, query.getUsername(), query.getType(), page);
+        List<UserData> userDataList = this.userWorkspaceMapper.listMember(workspaceId, query.getUsername(), null,
+                query.getType(), page);
         return new PageResult<>(userDataList, page.getCurrent(), page.getSize(), total);
     }
 

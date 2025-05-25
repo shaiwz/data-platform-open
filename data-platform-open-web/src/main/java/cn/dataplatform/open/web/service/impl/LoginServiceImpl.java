@@ -14,6 +14,7 @@ import cn.dataplatform.open.web.service.UserService;
 import cn.dataplatform.open.web.store.entity.User;
 import cn.dataplatform.open.web.store.entity.UserLoginLog;
 import cn.dataplatform.open.web.store.mapper.UserLoginLogMapper;
+import cn.dataplatform.open.web.store.mapper.UserWorkspaceMapper;
 import cn.dataplatform.open.web.util.JWTUtils;
 import cn.dataplatform.open.web.util.MD5Utils;
 import cn.dataplatform.open.web.vo.login.LoginRequest;
@@ -64,6 +65,8 @@ public class LoginServiceImpl implements LoginService {
     private UserLoginLogMapper userLoginLogMapper;
     @Resource
     private UserLoginLogService userLoginLogService;
+    @Resource
+    private UserWorkspaceMapper userWorkspaceMapper;
 
     /**
      * 登录
@@ -86,6 +89,13 @@ public class LoginServiceImpl implements LoginService {
         // 用户是否停用
         if (Objects.equals(user.getStatus(), Status.DISABLE.name())) {
             throw new ApiException("用户已停用，请联系管理员！");
+        }
+        if (!UserData.ADMIN.equals(user.getUsername())) {
+            // 是否有工作空间权限
+            Integer count = this.userWorkspaceMapper.withPermission(user.getId());
+            if (count == null || count == 0) {
+                throw new ApiException("用户没有工作空间权限，请联系管理员！");
+            }
         }
         UserLoginLog loginLog = this.userLoginLogService.lambdaQuery()
                 .eq(UserLoginLog::getUserId, user.getId())

@@ -1,6 +1,5 @@
 package cn.dataplatform.open.web.store.mapper;
 
-
 import cn.dataplatform.open.common.vo.base.PageBase;
 import cn.dataplatform.open.web.store.entity.UserWorkspace;
 import cn.dataplatform.open.web.store.entity.Workspace;
@@ -16,6 +15,12 @@ import java.util.List;
  */
 public interface UserWorkspaceMapper extends BaseMapper<UserWorkspace> {
 
+    /**
+     * 根据用户查询所属的启用中的工作空间列表
+     *
+     * @param userId 用户id
+     * @return 工作空间列表
+     */
     @Select(
             "SELECT DISTINCT `workspace`.* FROM `workspace` " +
                     "JOIN `user_workspace` ON `workspace`.`id` = `user_workspace`.`workspace_id` " +
@@ -25,6 +30,22 @@ public interface UserWorkspaceMapper extends BaseMapper<UserWorkspace> {
                     "AND `user_workspace`.`user_id` = #{userId}"
     )
     List<Workspace> listWorkspaceByUserId(Long userId);
+
+    /**
+     * 统计用户拥有权限的工作空间数量
+     *
+     * @param userId 用户id
+     * @return 工作空间数量
+     */
+    @Select(
+            "SELECT count(*) FROM `workspace` " +
+                    "JOIN `user_workspace` ON `workspace`.`id` = `user_workspace`.`workspace_id` " +
+                    "WHERE `workspace`.`deleted` = FALSE " +
+                    "AND `workspace`.`status` = 'ENABLE' " +
+                    "AND `user_workspace`.`deleted` = FALSE " +
+                    "AND `user_workspace`.`user_id` = #{userId}"
+    )
+    Integer withPermission(Long userId);
 
     /**
      * 统计所有人员
@@ -45,9 +66,14 @@ public interface UserWorkspaceMapper extends BaseMapper<UserWorkspace> {
                 <if test="username != null and username != ''">
                     and  ru.username like concat('%', #{username}, '%')
                 </if>
+                <if test="neUser != null">
+                    and rew.user_id != #{neUser}
+                </if>
             </script>
             """)
-    Long totalMember(@Param("workspaceId") Long workspaceId, @Param("username") String username, @Param("type") Integer type);
+    Long totalMember(@Param("workspaceId") Long workspaceId, @Param("username") String username,
+                     @Param("neUser") Long neUser,
+                     @Param("type") Integer type);
 
 
     /**
@@ -70,11 +96,15 @@ public interface UserWorkspaceMapper extends BaseMapper<UserWorkspace> {
                         <if test="username != null and username != ''">
                             and ru.username like concat('%', #{username}, '%')
                         </if>
+                        <if test="neUser != null">
+                            and rew.user_id != #{neUser}
+                        </if>
                         <bind name="offset" value="(page.current-1) * page.size"></bind>
                         limit #{offset},#{page.size}
             </script>
             """)
     List<UserData> listMember(@Param("workspaceId") Long workspaceId, @Param("username") String username,
+                              @Param("neUser") Long neUser,
                               @Param("type") Integer type,
                               @Param("page") PageBase page);
 

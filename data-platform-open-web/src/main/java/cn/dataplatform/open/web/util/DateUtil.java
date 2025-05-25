@@ -6,6 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -16,6 +17,11 @@ import java.time.ZonedDateTime;
  * @since 1.0.0
  */
 public class DateUtil extends cn.hutool.core.date.DateUtil {
+
+    public final static String SIMPLE_DATE_PATTERN = "yyyy-MM-dd";
+    public final static String FULL_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    public static final DateTimeFormatter ATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(SIMPLE_DATE_PATTERN);
+    public static final DateTimeFormatter FULL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern(FULL_DATE_PATTERN);
 
     /**
      * 时差,格式返回例如1d1h1s

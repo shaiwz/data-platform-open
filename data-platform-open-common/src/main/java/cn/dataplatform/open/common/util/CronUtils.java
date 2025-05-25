@@ -3,6 +3,8 @@ package cn.dataplatform.open.common.util;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -13,6 +15,7 @@ import java.time.ZonedDateTime;
  * @since 1.0.0
  */
 public class CronUtils {
+
 
     /**
      * 校验cron表达式是否有效
@@ -46,6 +49,33 @@ public class CronUtils {
     public static ZonedDateTime nextExecutionTime(String cronExpression, ZonedDateTime after) {
         CronExpression expression = CronExpression.parse(cronExpression);
         return expression.next(after);
+    }
+
+    /**
+     * 获取下x次执行时间
+     *
+     * @param cronExpression cron表达式
+     * @param after          从哪个时间点之后开始计算
+     * @return 下x次执行时间
+     */
+    public static List<ZonedDateTime> nextExecutionTime(String cronExpression, ZonedDateTime after, int times) {
+        CronExpression expression = CronExpression.parse(cronExpression);
+        List<ZonedDateTime> list = new ArrayList<>();
+        for (int i = 0; i < times; i++) {
+            after = expression.next(after);
+            list.add(after);
+        }
+        return list;
+    }
+
+    /**
+     * 获取下x次执行时间
+     *
+     * @param cronExpression cron表达式
+     * @return 下x次执行时间
+     */
+    public static List<ZonedDateTime> nextExecutionTime(String cronExpression, int times) {
+        return nextExecutionTime(cronExpression, ZonedDateTime.now(), times);
     }
 
     /**
