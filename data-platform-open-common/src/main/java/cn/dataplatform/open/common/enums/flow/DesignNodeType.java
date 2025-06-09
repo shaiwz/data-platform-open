@@ -43,24 +43,11 @@ public enum DesignNodeType {
     QUERY_DORIS("queryDoris", "查询Doris", Design.Node.QueryDoris.class),
     WRITE_DORIS("writeDoris", "写入Doris", Design.Node.WriteDoris.class),
     WRITE_ELASTIC("writeElastic", "写入Elastic", Design.Node.WriteElastic.class),
-    QUERY_ORACLE("queryOracle", "查询Oracle", Design.Node.QueryOracle.class),
-    WRITE_ORACLE("writeOracle", "写入Oracle", Design.Node.WriteOracle.class),
-    WRITE_STAR_ROCKS("writeStarRocks", "写入StarRocks", Design.Node.WriteStarRocks.class),
-    QUERY_STAR_ROCKS("queryStarRocks", "查询StarRocks", Design.Node.QueryStarRocks.class),
-    QUERY_POSTGRES("queryPostgre", "查询PostgreSQL", Design.Node.QueryPostgreSQL.class),
-    WRITE_POSTGRES("writePostgre", "写入PostgreSQL", Design.Node.WritePostgreSQL.class),
-    QUERY_DAMENG("queryDameng", "查询达梦", Design.Node.QueryDameng.class),
-    WRITE_DAMENG("writeDameng", "写入达梦", Design.Node.WriteDameng.class),
-    QUERY_CLICKHOUSE("queryClickHouse", "查询ClickHouse", Design.Node.QueryClickHouse.class),
     /**
      * 消息队列
      */
     KAFKA_SEND("kafkaSend", "Kafka发送", Design.Node.KafkaSend.class),
     KAFKA_RECEIVE("kafkaReceive", "Kafka接收", Design.Node.KafkaReceive.class),
-    ROCKET_SEND("rocketSend", "RocketMQ发送", Design.Node.RocketSend.class),
-    ROCKET_RECEIVE("rocketReceive", "RocketMQ接收", Design.Node.RocketReceive.class),
-    RABBIT_SEND("rabbitSend", "RabbitMQ发送", Design.Node.RabbitSend.class),
-    RABBIT_RECEIVE("rabbitReceive", "RabbitMQ接收", Design.Node.RabbitReceive.class),
     /**
      * 其他
      */

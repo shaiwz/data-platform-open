@@ -341,22 +341,10 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                                 throw new ApiException("Job节点必须有下游节点");
                             }
                         }
-                        case Design.Node.RabbitReceive ignored -> {
-                            // 如果接收完消息，不做任何事情，则流程不合理
-                            if (CollUtil.isEmpty(targetNodeIds)) {
-                                throw new ApiException("RabbitMQ接收完消息后，必须有下游节点");
-                            }
-                        }
                         case Design.Node.KafkaReceive ignored -> {
                             // 如果接收完消息，不做任何事情，则流程不合理
                             if (CollUtil.isEmpty(targetNodeIds)) {
                                 throw new ApiException("Kafka接收完消息后，必须有下游节点");
-                            }
-                        }
-                        case Design.Node.RocketReceive ignored -> {
-                            // 如果接收完消息，不做任何事情，则流程不合理
-                            if (CollUtil.isEmpty(targetNodeIds)) {
-                                throw new ApiException("RocketMQ接收完消息后，必须有下游节点");
                             }
                         }
                         case Design.Node.QueryDoris ignored -> {
@@ -369,21 +357,6 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                             // 如果是mysql查询，必须有下游节点
                             if (CollUtil.isEmpty(targetNodeIds)) {
                                 throw new ApiException("MySQL查询完数据后，必须有下游节点");
-                            }
-                        }
-                        case Design.Node.QueryStarRocks ignored -> {
-                            if (CollUtil.isEmpty(targetNodeIds)) {
-                                throw new ApiException("StarRocks查询完数据后，必须有下游节点");
-                            }
-                        }
-                        case Design.Node.QueryOracle ignored -> {
-                            if (CollUtil.isEmpty(targetNodeIds)) {
-                                throw new ApiException("Oracle查询完数据后，必须有下游节点");
-                            }
-                        }
-                        case Design.Node.QueryPostgreSQL ignored -> {
-                            if (CollUtil.isEmpty(targetNodeIds)) {
-                                throw new ApiException("PostgreSQL查询完数据后，必须有下游节点");
                             }
                         }
                         case Design.Node.Debezium ignored -> {
