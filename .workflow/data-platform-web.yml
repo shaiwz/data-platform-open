@@ -1,0 +1,91 @@
+version: '1.0'
+name: data-platform-web
+displayName: web
+triggers:
+  trigger: auto
+  push:
+    tags:
+      prefix:
+        - 2
+    paths:
+      include:
+        - ^data-platform-open-web/.*$
+variables:
+  APPLICATION: data-platform-web
+  REGISTRY_NAMESPACE: shaiwz-public
+  SOURCE_DIR: data-platform-open-web
+stages:
+  - name: scan
+    displayName: 扫描
+    strategy: naturally
+    trigger: auto
+    executor: [ ]
+    steps:
+      - step: sc@opensca
+        name: open_sca
+        displayName: OpenSCA 检测
+        detectPath: ./
+        notify: [ ]
+        strategy:
+          retry: '0'
+  - name: compile
+    displayName: 编译
+    strategy: naturally
+    trigger: auto
+    executor: []
+    steps:
+      - step: build@maven
+        name: build_maven
+        displayName: Maven 构建
+        jdkVersion: '21'
+        mavenVersion: 3.9.6
+        commands:
+          - mvn clean install -Dmaven.test.skip=true -U -e -X -B -N
+          - mvn clean install -Dmaven.test.skip=true -U -e -X -B -f data-platform-open-common/pom.xml
+          - mvn clean package -Dmaven.test.skip=true -U -e -X -B -f ${SOURCE_DIR}/pom.xml
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - ${SOURCE_DIR}/target
+        settings: []
+        caches:
+          - ~/.m2
+        notify: []
+        strategy:
+          retry: '0'
+  - name: build
+    displayName: 构建
+    strategy: naturally
+    trigger: auto
+    executor: []
+    steps:
+      - step: build@docker
+        name: build_docker
+        displayName: 构建镜像
+        type: cert
+        certificate: aliyun-cr-shaiwz-public
+        tag: ${REGISTRY_NAMESPACE}/${APPLICATION}:${GITEE_BRANCH}
+        dockerfile: ${SOURCE_DIR}/Dockerfile
+        context: ${SOURCE_DIR}/
+        artifacts:
+          - ${BUILD_ARTIFACT}
+        isCache: false
+        parameter: {}
+        notify: []
+        strategy:
+          retry: '0'
+      - step: build@docker
+        name: docker_build
+        displayName: 镜像构建
+        type: cert
+        certificate: aliyun-cr-shaiwz-public
+        tag: ${REGISTRY_NAMESPACE}/${APPLICATION}:latest
+        dockerfile: ${SOURCE_DIR}/Dockerfile
+        context: ${SOURCE_DIR}/
+        artifacts:
+          - ${BUILD_ARTIFACT}
+        isCache: false
+        parameter: {}
+        notify: []
+        strategy:
+          retry: '0'
