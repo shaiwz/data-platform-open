@@ -24,7 +24,7 @@ stages:
       - step: sc@opensca
         name: open_sca
         displayName: OpenSCA 检测
-        detectPath: ./
+        detectPath: ./${SOURCE_DIR}/
         notify: [ ]
         strategy:
           retry: '0'
