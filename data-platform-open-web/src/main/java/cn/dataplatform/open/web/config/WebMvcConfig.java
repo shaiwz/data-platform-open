@@ -20,6 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.servlet.config.annotation.AsyncSupportConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
@@ -63,8 +64,20 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     private static final List<String> EXCLUDE_PATH = Arrays.asList("/login/**", "/logout/**",
             "/actuator/**",
-            // 官网使用
-            "/official/**"
+            // 前端静态文件
+            "/assets/**",
+            "/**.html",
+            "/**.js",
+            "/**.css",
+            "/**.png",
+            "/**.jpg",
+            "/**.jpeg",
+            "/**.gif",
+            "/**.ico",
+            "/**.woff",
+            "/**.woff2",
+            "/**.ttf",
+            "/**.svg"
     );
 
     /**
@@ -136,6 +149,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void configureAsyncSupport(AsyncSupportConfigurer configurer) {
         configurer.setDefaultTimeout(30000);
         configurer.setTaskExecutor(this.taskExecutor);
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/").setViewName("forward:/index.html");
     }
 
 }

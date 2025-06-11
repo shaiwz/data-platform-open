@@ -20,7 +20,7 @@ public class LoginRequest {
      * 用户名/邮箱
      */
     @NotEmpty
-    @Size(min = 4, max = 32)
+    @Size(min = 4, max = 32, message = "用户名长度必须在4-32位之间")
     private String account;
 
     /**
