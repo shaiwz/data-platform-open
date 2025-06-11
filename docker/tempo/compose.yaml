@@ -1,0 +1,42 @@
+name: tempo
+
+services:
+  tempo:
+    container_name: tempo
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/grafana.tempo:2.7.2
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    command:
+      - "-config.file=/etc/tempo.yaml"
+    ports:
+      - "3200:3200"
+      - "9095:9095"
+    volumes:
+      - data:/var/tempo
+      - ./tempo.yaml:/etc/tempo.yaml
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3200/metrics"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/tempo

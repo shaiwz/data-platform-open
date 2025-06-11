@@ -1,0 +1,42 @@
+name: redis
+
+services:
+  redis:
+    container_name: redis
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/redis:7.4.2
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    ports:
+      - "6379:6379"
+    volumes:
+      - data:/data
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/redis
+

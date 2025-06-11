@@ -1,0 +1,44 @@
+name: prometheus
+
+services:
+  prometheus:
+    container_name: prometheus
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/prom.prometheus:v3.2.1
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    command:
+      - "--web.enable-remote-write-receiver"
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    volumes:
+      - data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:9090/metrics"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/prometheus

@@ -1,0 +1,41 @@
+name: loki
+
+services:
+  loki:
+    container_name: loki
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/grafana.loki:3.4.3
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    ports:
+      - "3100:3100"
+    volumes:
+      - data:/loki
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "--quiet", "http://localhost:3100/metrics"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/loki

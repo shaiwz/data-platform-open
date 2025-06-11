@@ -1,0 +1,35 @@
+name: ${APPLICATION}
+
+services:
+  data-platform-front:
+    container_name: ${APPLICATION}
+    image: ${DOCKER_REGISTRY}/${REGISTRY_NAMESPACE}/${APPLICATION}:${IMAGE_TAG}
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: "256M"
+        reservations:
+          cpus: "0.05"
+          memory: "64M"
+    ports:
+      - "${SERVER_PORT}:80"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    labels:
+      namespace: ${NAMESPACE}
+      application: ${APPLICATION}
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+
+networks:
+  dp:
+    external: true

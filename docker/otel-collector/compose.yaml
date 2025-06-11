@@ -1,0 +1,33 @@
+name: otel-collector
+
+services:
+  otel-collector:
+    container_name: otel-collector
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/otel.opentelemetry-collector:0.123.0
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./config.yaml:/etc/otelcol/config.yaml
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+#    healthcheck:
+#      test: ["CMD", "true"]
+
+networks:
+  dp:
+    external: true

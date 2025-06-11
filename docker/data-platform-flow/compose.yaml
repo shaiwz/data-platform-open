@@ -1,0 +1,45 @@
+name: ${APPLICATION}
+
+services:
+  data-platform-flow:
+    image: ${DOCKER_REGISTRY}/${REGISTRY_NAMESPACE}/${APPLICATION}:${IMAGE_TAG}
+    deploy:
+      mode: replicated
+      replicas: 2
+      endpoint_mode: vip
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    volumes:
+      - logs:/logs/${APPLICATION}
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    labels:
+      namespace: ${NAMESPACE}
+      application: ${APPLICATION}
+      framework: spring-boot
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${LOGS_DIR}/${APPLICATION}
+

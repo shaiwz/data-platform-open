@@ -1,0 +1,47 @@
+name: alloy
+
+services:
+  alloy:
+    container_name: alloy
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/grafana.alloy:v1.8.1
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    command:
+      - run
+      - --server.http.listen-addr=0.0.0.0:12345
+      - --storage.path=/var/lib/alloy/data
+      - /etc/alloy/config.alloy
+    ports:
+      - "12345:12345"
+    volumes:
+      - data:/var/lib/alloy/data
+      - ./config.alloy:/etc/alloy/config.alloy
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "true"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/alloy

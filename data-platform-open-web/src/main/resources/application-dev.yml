@@ -35,11 +35,11 @@ mybatis-plus:
 
 dp:
   password:
-    secret-key: ${DP_PASSWORD_SECRET_KEY:Dpdqwa1eDC13%09=}
+    secret-key: ${DP_PASSWORD_SECRET_KEY:0000000000000000}
   auth:
     jwt:
       # 新版本要求密钥长度必须大于 256
-      secret-key: ${DP_JWT_SECRET_KEY:data-platform-0000000000000000000000000000000000000000000000000000000000000001}
+      secret-key: ${DP_JWT_SECRET_KEY:0000000000000000000000000000000000000000000000000000000000000000}
       # token失效时间(毫秒单位)
       keep-time: -1 # 废弃,由redis维护
     token:

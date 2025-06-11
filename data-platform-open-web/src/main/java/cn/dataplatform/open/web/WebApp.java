@@ -48,9 +48,9 @@ public class WebApp {
 
     public static void main(String[] args) {
         // 暂时还不完整，待整理完毕后可运行
-        if (true) {
-            throw new UnsupportedOperationException("待整理完毕，暂不支持");
-        }
+        //if (true) {
+        //    throw new UnsupportedOperationException("待整理完毕，暂不支持");
+        //}
         SpringApplication.run(WebApp.class, args);
         System.out.println("""
                  __       ___          __            ___  ___  __   __       \s

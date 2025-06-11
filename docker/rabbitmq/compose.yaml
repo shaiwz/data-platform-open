@@ -1,0 +1,41 @@
+name: rabbitmq
+
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    image: registry.cn-beijing.aliyuncs.com/daodao-bot/rabbitmq:4.0.5-management
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '1'
+          memory: 2G
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - data:/var/lib/rabbitmq
+    environment:
+      TZ: Asia/Shanghai
+      DATETIME: "2025-01-01T00:00:00"
+    env_file:
+      - .env
+    networks:
+      - dp
+    restart: always
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+
+networks:
+  dp:
+    external: true
+
+volumes:
+  data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_DIR}/rabbitmq

@@ -1,0 +1,108 @@
+prometheus.exporter.cadvisor "docker_metrics" {
+  docker_host = "unix:///var/run/docker.sock"
+  storage_duration = "5m"
+}
+
+prometheus.scrape "docker_metrics" {
+  targets = prometheus.exporter.cadvisor.docker_metrics.targets
+  forward_to = [ prometheus.remote_write.docker_metrics.receiver ]
+  scrape_interval = "15s"
+}
+
+prometheus.remote_write "docker_metrics" {
+  endpoint {
+    url = "http://prometheus:9090/api/v1/write"
+  }
+}
+
+discovery.docker "docker_logs" {
+  host = "unix:///var/run/docker.sock"
+  refresh_interval = "15s"
+}
+
+discovery.relabel "docker_logs" {
+  targets = discovery.docker.docker_logs.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_id"]
+    target_label = "container_id"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex = "/(.*)"
+    target_label = "container_name"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_container_number"]
+    target_label = "container_number"
+  }
+  rule {
+    source_labels = ["__meta_docker_network_ip"]
+    target_label = "network_ip"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label = "service"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_namespace"]
+    target_label = "namespace"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_application"]
+    target_label = "application"
+  }
+  rule {
+    source_labels = ["__meta_docker_container_label_framework"]
+    target_label = "framework"
+  }
+}
+
+loki.source.docker "docker_logs" {
+  host = "unix:///var/run/docker.sock"
+  // targets = discovery.docker.docker_logs.targets
+  targets = discovery.relabel.docker_logs.output
+  forward_to = [loki.process.extract_custom_fields.receiver]
+  // relabel_rules = discovery.relabel.docker_logs.rules
+  refresh_interval = "30s"
+}
+
+loki.write "docker_logs" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}
+
+loki.process "extract_custom_fields" {
+  forward_to = [loki.write.docker_logs.receiver]
+
+  stage.match {
+    selector = "{framework=\"spring-boot\"}"
+
+    stage.multiline {
+      firstline = "^\\d{4}-\\d{2}-\\d{2}[\\s|T]\\d{2}:\\d{2}:\\d{2}\\.\\d{3}\\s+"
+      max_wait_time = "1s"
+      max_lines = 100
+    }
+  }
+
+  stage.match {
+    // selector = "{namespace=\"dp\", application=\"data-platform-flow\"}"
+    selector = "{namespace=\"dp\", framework=\"spring-boot\"}"
+
+    stage.regex {
+      // expression = "\\[(?P<flowCode>|[0-9a-f]{32})\\]\\s*\\[(?P<requestId>|[0-9a-f]{32})\\]"
+      // expression = "^(?P<timestamp>\d{4}-\d{2}-\d{2}[\s|T]\d{2}:\d{2}:\d{2}\.\d{3})\s+(?P<level>\w+)\s+(?P<process_id>\d+)\s+---\s+\[(?P<application>[^\]]+)\]\s+\[(?P<thread_name>[^\]]+)\]\s+(\[(?:(?P<flowCode>[a-f0-9]{32})|\s{32})\]\s+)?\[(?:(?P<requestId>[a-f0-9]{32})|\s{32})\]\s+(?P<logger>[^\s]+)\s+:\s+(?P<message>[\s\S]+)$"
+      expression = "^(?P<timestamp>\\d{4}-\\d{2}-\\d{2}[\\s|T]\\d{2}:\\d{2}:\\d{2}\\.\\d{3})\\s+(?P<level>\\w+)\\s+(?P<process_id>\\d+)\\s+---\\s+\\[(?P<application>[^\\]]+)\\]\\s+\\[(?P<thread_name>[^\\]]+)\\]\\s+(\\[(?:(?P<flowCode>[a-f0-9]{32})|\\s{32})\\]\\s+)?\\[(?:(?P<requestId>[a-f0-9]{32})|\\s{32})\\]\\s+(?P<logger>[^\\s]+)\\s+:\\s+(?P<message>[\\s\\S]+)$"
+    }
+
+    stage.labels {
+      values = {
+        level = "",
+        flowCode = "",
+        requestId = "",
+      }
+    }
+  }
+
+}
