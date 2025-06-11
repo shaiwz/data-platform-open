@@ -40,9 +40,9 @@ stages:
         nodeVersion: 20.10.0
         commands:
           - cd ${SOURCE_DIR}
-          - npm config set registry https://registry.npmmirror.com
-          - npm install
-          - npm run build
+          #- npm config set registry https://registry.npmmirror.com
+          #- npm install
+          #- npm run build
         artifacts:
           - name: BUILD_ARTIFACT
             path:
