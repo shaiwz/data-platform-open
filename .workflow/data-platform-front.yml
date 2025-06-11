@@ -1,6 +1,6 @@
 version: '1.0'
-name: data-platform-query
-displayName: query
+name: data-platform-front
+displayName: front
 triggers:
   trigger: auto
   push:
@@ -9,11 +9,11 @@ triggers:
         - 2
     paths:
       include:
-        - ^data-platform-open-query/.*$
+        - ^data-platform-open-front/.*$
 variables:
-  APPLICATION: data-platform-query
+  APPLICATION: data-platform-front
   REGISTRY_NAMESPACE: shaiwz-public
-  SOURCE_DIR: data-platform-open-query
+  SOURCE_DIR: data-platform-open-front
 stages:
   - name: scan
     displayName: 扫描
@@ -34,22 +34,23 @@ stages:
     trigger: auto
     executor: []
     steps:
-      - step: build@maven
-        name: build_maven
-        displayName: Maven 构建
-        jdkVersion: '21'
-        mavenVersion: 3.9.6
+      - step: build@nodejs
+        name: build_nodejs
+        displayName: Nodejs 构建
+        nodeVersion: 20.10.0
         commands:
-          - mvn clean install -Dmaven.test.skip=true -U -e -X -B -N
-          - mvn clean install -Dmaven.test.skip=true -U -e -X -B -f data-platform-open-common/pom.xml
-          - mvn clean package -Dmaven.test.skip=true -U -e -X -B -f ${SOURCE_DIR}/pom.xml
+          - cd ${SOURCE_DIR}
+          - npm config set registry https://registry.npmmirror.com
+          - npm install
+          - npm run build
         artifacts:
           - name: BUILD_ARTIFACT
             path:
-              - ${SOURCE_DIR}/target
-        settings: []
+              - ./${SOURCE_DIR}/dist
         caches:
-          - ~/.m2
+          - ~/.npm
+          - ~/.yarn
+          - ~/.pnpm
         notify: []
         strategy:
           retry: '0'
