@@ -24,12 +24,8 @@ public class DataSourceTestFactory {
             case MYSQL -> new MySQLDataSourceTest();
             case DORIS -> new DorisDataSourceTest();
             case ELASTIC -> new ElasticDataSourceTest();
-            case RABBIT_MQ -> new RabbitMQDataSourceTest();
-            case ROCKET_MQ -> new RocketMQDataSourceTest();
-            case ORACLE -> new OracleDataSourceTest();
             case KAFKA -> new KafkaDataSourceTest();
             case POSTGRESQL -> new PostgreSQLDataSourceTest();
-            case STAR_ROCKS -> new StarRocksDataSourceTest();
             default -> throw new UnsupportedOperationException("不支持的数据源类型");
         };
     }

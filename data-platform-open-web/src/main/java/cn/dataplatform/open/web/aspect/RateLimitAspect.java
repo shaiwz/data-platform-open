@@ -1,5 +1,6 @@
 package cn.dataplatform.open.web.aspect;
 
+import cn.dataplatform.open.common.enums.RedisKey;
 import cn.dataplatform.open.common.exception.ApiException;
 import cn.dataplatform.open.common.util.HttpServletUtils;
 import cn.dataplatform.open.common.util.IPUtils;
@@ -22,8 +23,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
 /**
- * 〈一句话功能简述〉<br>
- * 〈接口级别限流,依赖于redis〉
+ * 接口级别限流,依赖于redis
  *
  * @author 丁乾文
  * @date 2021/6/17
@@ -37,13 +37,6 @@ public class RateLimitAspect {
 
     @Resource
     private RedissonClient redissonClient;
-
-    /**
-     * 限流key前缀,防止与其他redis key重复
-     * <p>
-     * dp:rate-limit:{ip}:value
-     */
-    private static final String KEY_PRE = "dp:rate-limit:{%s}";
 
     /**
      * 限流环绕通知
@@ -77,7 +70,7 @@ public class RateLimitAspect {
                 yield request.getRequestURI() + request.getRemoteAddr();
             }
         };
-        String key = String.format(KEY_PRE, value);
+        String key = RedisKey.RATE_LIMIT.build(value);
         log.info("执行限流拦截器,限制类型:{},key:{}", rateLimit.type(), key);
         this.executor(key, rateLimit);
         return joinPoint.proceed();
@@ -96,7 +89,7 @@ public class RateLimitAspect {
         long limit = rateLimit.limit();
         // 时间单位
         ChronoUnit chronoUnit = rateLimit.chronoUnit();
-        RRateLimiter rateLimiter = redissonClient.getRateLimiter(key);
+        RRateLimiter rateLimiter = this.redissonClient.getRateLimiter(key);
         // 初始化RateLimiter的状态,并将配置存储到Redis服务器
         if (!rateLimiter.isExists()) {
             boolean trySetRate = rateLimiter.trySetRate(RateType.OVERALL, limit, Duration.of(refreshInterval, chronoUnit));

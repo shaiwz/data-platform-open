@@ -51,24 +51,22 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
-import org.apache.shardingsphere.driver.jdbc.core.datasource.ShardingSphereDataSource;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.Closeable;
 import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -90,6 +88,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
     /**
      * 默认半小时自动过期
      */
+    @Getter
     public TimedCache<String, Object> defaultDataSourceCache = CacheUtil.newTimedCache(1800 * 1000L);
 
     @Resource
@@ -109,15 +108,11 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
     public DataSourceServiceImpl() {
         this.defaultDataSourceCache.setListener((key, value) -> {
             log.info("缓存过期:{}", key);
-            if (value instanceof HikariDataSource hikariDataSource) {
-                IoUtil.close(hikariDataSource);
-            } else if (value instanceof ShardingSphereDataSource sphereDataSource) {
-                IoUtil.close(sphereDataSource);
-            } else if (value instanceof RabbitTemplate rabbitTemplate) {
+            if (value instanceof RabbitTemplate rabbitTemplate) {
                 rabbitTemplate.stop();
             } else if (value instanceof AdminClient adminClient) {
                 IoUtil.close(adminClient);
-            } else if (value instanceof Closeable closeable) {
+            } else if (value instanceof AutoCloseable closeable) {
                 IoUtil.close(closeable);
             }
         });
@@ -241,7 +236,6 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
             }
             // 一直关闭时更新忽略
         }
-        this.defaultDataSourceCache.remove(dataSource.getCode());
         if (StrUtil.isNotBlank(dataSourceUpdateRequest.getPassword())) {
             // 如果编辑时，源密码与数据库密钥一致，则不需要再次加密，否则是新设置的密码，修改过
             if (!Objects.equals(dataSourceUpdateRequest.getPassword(), dataSource.getPassword())) {
@@ -288,7 +282,6 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
             messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
             this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
         }
-        this.defaultDataSourceCache.remove(dataSource.getCode());
         return true;
     }
 
@@ -365,7 +358,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         if (!Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
             throw new ApiException("数据源非启用状态");
         }
-        javax.sql.DataSource ds = (javax.sql.DataSource) this.dataSourceConnect(dataSource);
+        javax.sql.DataSource ds = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
         try (Connection connection = ds.getConnection()) {
             DataSourceTable dataSourceTable = DataSourceTableFactory.get(dataSource.getType());
             List<SchemaTable> schemaTables = dataSourceTable.schemaTable(connection);
@@ -393,28 +386,49 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
     }
 
     /**
+     * 数据源连接
+     *
+     * @param id 数据源ID
+     * @return r
+     */
+    @Override
+    public <T> T dataSourceConnect(Long id, Class<T> clazz) {
+        DataSource dataSource = this.getById(id);
+        if (dataSource == null) {
+            throw new ApiException("数据源不存在");
+        }
+        // 是否启用
+        if (!Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
+            throw new ApiException("数据源非启用状态");
+        }
+        return this.dataSourceConnect(dataSource, clazz);
+    }
+
+    /**
      * 获取连接,先从缓存获取
      *
      * @param dataSource 数据库连接配置
      * @return 数据源
      */
+    @SuppressWarnings("all")
     @Override
-    public Object dataSourceConnect(DataSource dataSource) {
+    public <T> T dataSourceConnect(DataSource dataSource, Class<T> clazz) {
         String code = dataSource.getCode();
         String type = dataSource.getType();
         String url = dataSource.getUrl();
         String username = dataSource.getUsername();
         // 解密
         String password = this.passwordEncAndDecService.decrypt(dataSource.getPassword());
-        return this.defaultDataSourceCache.get(code, () -> {
-            if (type.equals("RabbitMQ")) {
+        String name = clazz.getName();
+        Object object = this.defaultDataSourceCache.get(code + ":" + name, () -> {
+            if (Objects.equals(clazz, RabbitTemplate.class)) {
                 CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
                 connectionFactory.setUri(url);
                 connectionFactory.setUsername(username);
                 connectionFactory.setPassword(password);
                 connectionFactory.setVirtualHost("/");
                 return new RabbitTemplate(connectionFactory);
-            } else if (type.equals("Kafka")) {
+            } else if (clazz.equals(AdminClient.class)) {
                 Properties props = new Properties();
                 props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, url);
                 // 设置 SASL 认证相关配置
@@ -426,16 +440,26 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                             "password=\"" + password + "\";");
                 }
                 return AdminClient.create(props);
+            } else if (clazz.equals(javax.sql.DataSource.class)) {
+                HikariDataSource hikariDataSource = new HikariDataSource();
+                hikariDataSource.setJdbcUrl(dataSource.getUrl());
+                hikariDataSource.setUsername(dataSource.getUsername());
+                hikariDataSource.setPassword(password);
+                hikariDataSource.setDriverClassName(dataSource.getDriver());
+                hikariDataSource.setMinimumIdle(5);
+                // 控制台相关不需要太多连接
+                hikariDataSource.setMaximumPoolSize(10);
+                return hikariDataSource;
+            } else {
+                throw new ApiException("不支持的数据源类型: " + type);
             }
-            HikariDataSource hikariDataSource = new HikariDataSource();
-            hikariDataSource.setJdbcUrl(dataSource.getUrl());
-            hikariDataSource.setUsername(dataSource.getUsername());
-            hikariDataSource.setPassword(password);
-            hikariDataSource.setDriverClassName(dataSource.getDriver());
-            hikariDataSource.setMinimumIdle(5);
-            hikariDataSource.setMaximumPoolSize(dataSource.getMaxPoolSize());
-            return hikariDataSource;
         });
+        // 判断类型
+        if (clazz.isInstance(object)) {
+            return (T) object;
+        }
+        // 如果不是指定类型，则抛出异常
+        throw new ApiException("数据源连接类型不匹配,期望类型:" + clazz.getName() + ",实际类型:" + object.getClass().getName());
     }
 
     /**
@@ -458,7 +482,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         }
         String schema = request.getSchema();
         String table = request.getTable();
-        javax.sql.DataSource ds = (javax.sql.DataSource) this.dataSourceConnect(dataSource);
+        javax.sql.DataSource ds = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
         try (Connection connection = ds.getConnection()) {
             DataSourceTable dataSourceTable = DataSourceTableFactory.get(dataSource.getType());
             return dataSourceTable.tableDetail(connection, schema, table);

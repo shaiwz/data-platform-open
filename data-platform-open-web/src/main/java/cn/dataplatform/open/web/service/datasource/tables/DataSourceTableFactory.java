@@ -25,9 +25,7 @@ public class DataSourceTableFactory {
         return switch (dataSourceType) {
             case MYSQL -> new MySQLDataSourceTable();
             case DORIS -> new DorisDataSourceTable();
-            case ORACLE -> new OracleDataSourceTable();
             case POSTGRESQL -> new PostgreSQLDataSourceTable();
-            case STAR_ROCKS -> new StarRocksDataSourceTable();
             default -> throw new UnsupportedOperationException("不支持的数据源类型");
         };
     }

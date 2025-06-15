@@ -104,13 +104,12 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                 )
                 .like(StrUtil.isNotBlank(query.getName()), DataFlow::getName, query.getName())
                 .eq(StrUtil.isNotBlank(query.getCode()), DataFlow::getCode, query.getCode())
-                .eq(StrUtil.isNotBlank(query.getStatus()), DataFlow::getStatus, query.getStatus())
                 .eq(DataFlow::getWorkspaceCode, workspace.getCode())
-                // 按照ENABLE、PAUSE、DISABLE顺序排序
                 .last("ORDER BY CASE status " +
                         "WHEN 'ENABLE' THEN 1 " +
-                        // 列表最近更新的优先级更高
-                        "ELSE 2 END ASC, update_time DESC")
+                        "WHEN 'PAUSE' THEN 2 " +
+                        "WHEN 'TBP' THEN 3 " +
+                        "ELSE 4 END ASC, update_time DESC")
                 .page(new Page<>(page.getCurrent(), page.getSize()));
         PageResult<DataFlowListResponse> pageResult = new PageResult<>();
         List<DataFlow> records = dataFlowPage.getRecords();
@@ -151,7 +150,7 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
         Map<String, DataFlowPublish> dataFlowPublishMap = dataFlowPublishes.stream()
                 .collect(Collectors.toMap(m -> String.format("%s-%s", m.getCode(), m.getVersion()), Function.identity()));
         Long currentUserId = Context.getUser().getId();
-        List<DataFlowListResponse> collect = records.stream()
+        List<DataFlowListResponse> collect = records.parallelStream()
                 .map(m -> {
                     DataFlowListResponse dataFlowListResponse = new DataFlowListResponse();
                     this.orikaMapper.map(m, dataFlowListResponse);
@@ -214,18 +213,20 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
             requestExtractId = false, id = "#id")
     @Override
     public DataFlowCreateResponse create(DataFlowCreateRequest dataFlowListResponse) {
+        WorkspaceData workspace = Context.getWorkspace();
         // 检查名称是否重复
         if (this.lambdaQuery().eq(DataFlow::getName, dataFlowListResponse.getName())
-                .eq(DataFlow::getWorkspaceCode, Context.getWorkspace().getCode())
+                .eq(DataFlow::getWorkspaceCode, workspace.getCode())
                 .exists()) {
             throw new ApiException("数据流名称已经存在");
         }
-        WorkspaceData workspace = Context.getWorkspace();
         DataFlow dataFlow = new DataFlow();
         this.orikaMapper.map(dataFlowListResponse, dataFlow);
         dataFlow.setCode(UUID.fastUUID().toString(true));
         dataFlow.setCreateUserId(Context.getUser().getId());
+        dataFlow.setStatus(FlowStatus.TBP.name());
         dataFlow.setWorkspaceCode(workspace.getCode());
+        dataFlow.setCurrentVersion(VersionUtils.INIT_VERSION);
         this.save(dataFlow);
         DataFlowCreateResponse dataFlowCreateResponse = new DataFlowCreateResponse();
         dataFlowCreateResponse.setId(dataFlow.getId());
@@ -383,15 +384,20 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
      */
     @Override
     public DataFlowDetailResponse detail(Long id) {
-        DataFlow byId = this.getById(id);
-        if (byId != null) {
-            DataFlowDetailResponse dataFlowDetailResponse = new DataFlowDetailResponse();
-            this.orikaMapper.map(byId, dataFlowDetailResponse);
-            dataFlowDetailResponse.setDesign(JSON.parseObject(byId.getDesign()));
-            dataFlowDetailResponse.setSpecifyInstances(JSON.parseArray(byId.getSpecifyInstances(), String.class));
-            return dataFlowDetailResponse;
+        DataFlow dataFlow = this.getById(id);
+        if (dataFlow == null) {
+            return null;
         }
-        return null;
+        DataFlowDetailResponse dataFlowDetailResponse = new DataFlowDetailResponse();
+        this.orikaMapper.map(dataFlow, dataFlowDetailResponse);
+        dataFlowDetailResponse.setDesign(JSON.parseObject(dataFlow.getDesign()));
+        String specifyInstances = dataFlow.getSpecifyInstances();
+        if (StrUtil.isNotBlank(specifyInstances)) {
+            dataFlowDetailResponse.setSpecifyInstances(JSON.parseArray(specifyInstances, String.class));
+        } else {
+            dataFlowDetailResponse.setSpecifyInstances(Collections.emptyList());
+        }
+        return dataFlowDetailResponse;
     }
 
     /**
@@ -435,7 +441,7 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
         }
         // 原来的版本变为禁用状态
         this.dataFlowPublishService.lambdaUpdate()
-                .set(DataFlowPublish::getStatus, Status.DISABLE.name())
+                .set(DataFlowPublish::getStatus, FlowStatus.HISTORY.name())
                 .eq(DataFlowPublish::getCode, dataFlow.getCode())
                 .in(DataFlowPublish::getStatus, Arrays.asList(FlowStatus.ENABLE.name(), FlowStatus.PAUSE.name()))
                 .update();
@@ -507,7 +513,8 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
         this.dataFlowPublishService.updateById(dataFlowPublish);
         // 先清理之前的异常信息
         RList<FlowError> flowErrors = this.redissonClient.getList(RedisKey.FLOW_ERROR.build(
-                dataFlowPublish.getWorkspaceCode() + "-" + dataFlowPublish.getCode()));
+                dataFlowPublish.getWorkspaceCode() + "-" + dataFlowPublish.getCode())
+        );
         flowErrors.delete();
         // 发送给数据流集群
         DataFlowMessageBody dataFlowMessageBody = new DataFlowMessageBody();
@@ -517,7 +524,6 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
         this.applicationEventPublisher.publishEvent(new DataFlowEvent(dataFlowMessageBody));
         return true;
     }
-
 
     /**
      * 停止流程
@@ -577,16 +583,16 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
             return false;
         }
         // 如果运行中的，二次确认需要先停用，才能删除
-        if (StrUtil.equals(dataFlow.getStatus(), Status.ENABLE.name())) {
+        if (StrUtil.equals(dataFlow.getStatus(), FlowStatus.ENABLE.name())) {
             throw new ApiException("数据流正在运行中，请先停止数据流");
             // 以下通知逻辑暂时保留
         }
         this.removeById(id);
         // 如果已经发布 通知查询服务删除
-        if (StrUtil.equals(dataFlow.getStatus(), Status.ENABLE.name())) {
+        if (StrUtil.equals(dataFlow.getStatus(), FlowStatus.ENABLE.name())) {
             DataFlowPublish dataFlowPublish = this.dataFlowPublishService.lambdaQuery()
                     .eq(DataFlowPublish::getCode, dataFlow.getCode())
-                    .eq(DataFlowPublish::getStatus, Status.ENABLE.name())
+                    .eq(DataFlowPublish::getStatus, FlowStatus.ENABLE.name())
                     .one();
             if (dataFlowPublish != null) {
                 // 清理异常信息
@@ -595,7 +601,7 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                 flowErrors.delete();
                 // 改为禁用
                 this.dataFlowPublishService.lambdaUpdate()
-                        .set(DataFlowPublish::getStatus, Status.DISABLE.name())
+                        .set(DataFlowPublish::getStatus, FlowStatus.HISTORY.name())
                         .eq(DataFlowPublish::getId, dataFlowPublish.getId())
                         .update();
                 DataFlowMessageBody dataFlowMessageBody = new DataFlowMessageBody();
@@ -666,7 +672,7 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                 .last("ORDER BY CASE status " +
                         "WHEN 'ENABLE' THEN 1 " +
                         "WHEN 'PAUSE' THEN 2 " +
-                        "WHEN 'DISABLE' THEN 3 " +
+                        "WHEN 'HISTORY' THEN 3 " +
                         "ELSE 4 END ASC, update_time DESC")
                 .last("limit 20")
                 .list();

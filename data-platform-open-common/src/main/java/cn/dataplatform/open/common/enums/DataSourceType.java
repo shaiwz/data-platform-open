@@ -15,23 +15,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum DataSourceType {
     /**
-     * MySQL Doris StarRocks Oracle等
+     * MySQL等
      */
     MYSQL("MySQL"),
     DORIS("Doris"),
     KAFKA("Kafka"),
     ELASTIC("Elastic"),
-    STAR_ROCKS("StarRocks"),
-    ORACLE("Oracle"),
-    RABBIT_MQ("RabbitMQ"),
-    ROCKET_MQ("RocketMQ"),
     POSTGRESQL("PostgreSQL"),
-    /**
-     * 达梦
-     */
-    DAMENG("Dameng"),
-    CLICKHOUSE("ClickHouse"),
-    HIVE("Hive"),
     ;
 
     private final String value;
@@ -47,10 +37,6 @@ public enum DataSourceType {
         return switch (type) {
             case "MySQL" -> MYSQL;
             case "Doris" -> DORIS;
-            case "RabbitMQ" -> RABBIT_MQ;
-            case "RocketMQ" -> ROCKET_MQ;
-            case "StarRocks" -> STAR_ROCKS;
-            case "Oracle" -> ORACLE;
             case "Kafka" -> KAFKA;
             case "Elastic" -> ELASTIC;
             case "PostgreSQL" -> POSTGRESQL;

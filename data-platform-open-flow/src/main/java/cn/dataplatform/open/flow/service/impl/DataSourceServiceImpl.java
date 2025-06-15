@@ -104,21 +104,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                 sqlDataSource.setDriverClassName(dataSource.getDriver());
                 sqlDataSource.setPartitioningAlgorithm(dataSource.getPartitioningAlgorithm());
                 sqlDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), sqlDataSource);
-                break;
-            case RABBIT_MQ:
-                RabbitMQDataSource mqDataSource = new RabbitMQDataSource();
-                mqDataSource.setCode(dataSource.getCode());
-                mqDataSource.setUrl(dataSource.getUrl());
-                mqDataSource.setUsername(dataSource.getUsername());
-                mqDataSource.setPassword(password);
-                sourceManager.addSource(dataSource.getWorkspaceCode(), mqDataSource);
-                break;
-            case ROCKET_MQ:
-                RocketMQDataSource rocketMQDataSource = new RocketMQDataSource();
-                rocketMQDataSource.setCode(dataSource.getCode());
-                rocketMQDataSource.setUrl(dataSource.getUrl());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), rocketMQDataSource);
+                this.sourceManager.addSource(dataSource.getWorkspaceCode(), sqlDataSource);
                 break;
             case DORIS:
                 DorisDataSource dorisDataSource = new DorisDataSource();
@@ -134,7 +120,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                     dorisDataSource.setFeNodes(Arrays.asList(dataSource.getFeNodes().split(",")));
                 }
                 dorisDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), dorisDataSource);
+                this.sourceManager.addSource(dataSource.getWorkspaceCode(), dorisDataSource);
                 break;
             case ELASTIC:
                 ElasticDataSource elasticDataSource = new ElasticDataSource();
@@ -142,7 +128,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                 elasticDataSource.setUrl(dataSource.getUrl());
                 elasticDataSource.setUsername(dataSource.getUsername());
                 elasticDataSource.setPassword(password);
-                sourceManager.addSource(dataSource.getWorkspaceCode(), elasticDataSource);
+                this.sourceManager.addSource(dataSource.getWorkspaceCode(), elasticDataSource);
                 break;
             case KAFKA:
                 KafkaDataSource kafkaDataSource = new KafkaDataSource();
@@ -150,35 +136,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                 kafkaDataSource.setUrl(dataSource.getUrl());
                 kafkaDataSource.setUsername(dataSource.getUsername());
                 kafkaDataSource.setPassword(password);
-                sourceManager.addSource(dataSource.getWorkspaceCode(), kafkaDataSource);
-                break;
-            case ORACLE:
-                OracleDataSource oracleDataSource = new OracleDataSource();
-                oracleDataSource.setCode(dataSource.getCode());
-                oracleDataSource.setUrl(dataSource.getUrl());
-                oracleDataSource.setUsername(dataSource.getUsername());
-                oracleDataSource.setPassword(password);
-                oracleDataSource.setDriverClassName(dataSource.getDriver());
-                oracleDataSource.setPartitioningAlgorithm(dataSource.getPartitioningAlgorithm());
-                oracleDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), oracleDataSource);
-                break;
-            case STAR_ROCKS:
-                StarRocksDataSource starRocksDataSource = new StarRocksDataSource();
-                starRocksDataSource.setName(dataSource.getName());
-                starRocksDataSource.setCode(dataSource.getCode());
-                starRocksDataSource.setUrl(dataSource.getUrl());
-                starRocksDataSource.setUsername(dataSource.getUsername());
-                starRocksDataSource.setPassword(password);
-                starRocksDataSource.setDriverClassName(dataSource.getDriver());
-                if (StrUtil.isNotBlank(dataSource.getBeNodes())) {
-                    starRocksDataSource.setBeNodes(Arrays.asList(dataSource.getBeNodes().split(",")));
-                }
-                if (StrUtil.isNotBlank(dataSource.getFeNodes())) {
-                    starRocksDataSource.setFeNodes(Arrays.asList(dataSource.getFeNodes().split(",")));
-                }
-                starRocksDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), starRocksDataSource);
+                this.sourceManager.addSource(dataSource.getWorkspaceCode(), kafkaDataSource);
                 break;
             case POSTGRESQL:
                 PostgreSQLDataSource postgreSQLDataSource = new PostgreSQLDataSource();
@@ -190,43 +148,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                 postgreSQLDataSource.setDriverClassName(dataSource.getDriver());
                 postgreSQLDataSource.setPartitioningAlgorithm(dataSource.getPartitioningAlgorithm());
                 postgreSQLDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), postgreSQLDataSource);
-                break;
-            case DAMENG:
-                DamengDataSource damengDataSource = new DamengDataSource();
-                damengDataSource.setName(dataSource.getName());
-                damengDataSource.setCode(dataSource.getCode());
-                damengDataSource.setUrl(dataSource.getUrl());
-                damengDataSource.setUsername(dataSource.getUsername());
-                damengDataSource.setPassword(password);
-                damengDataSource.setDriverClassName(dataSource.getDriver());
-                damengDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), damengDataSource);
-                break;
-            case CLICKHOUSE:
-                ClickHouseDataSource clickHouseDataSource = new ClickHouseDataSource();
-                clickHouseDataSource.setName(dataSource.getName());
-                clickHouseDataSource.setCode(dataSource.getCode());
-                clickHouseDataSource.setUrl(dataSource.getUrl());
-                clickHouseDataSource.setUsername(dataSource.getUsername());
-                clickHouseDataSource.setPassword(password);
-                clickHouseDataSource.setDriverClassName(dataSource.getDriver());
-                clickHouseDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                if (StrUtil.isNotBlank(dataSource.getNodes())) {
-                    clickHouseDataSource.setNodes(Arrays.asList(dataSource.getBeNodes().split(",")));
-                }
-                sourceManager.addSource(dataSource.getWorkspaceCode(), clickHouseDataSource);
-                break;
-            case HIVE:
-                HiveDataSource hiveDataSource = new HiveDataSource();
-                hiveDataSource.setName(dataSource.getName());
-                hiveDataSource.setCode(dataSource.getCode());
-                hiveDataSource.setUrl(dataSource.getUrl());
-                hiveDataSource.setUsername(dataSource.getUsername());
-                hiveDataSource.setPassword(password);
-                hiveDataSource.setDriverClassName(dataSource.getDriver());
-                hiveDataSource.setMaxPoolSize(dataSource.getMaxPoolSize());
-                sourceManager.addSource(dataSource.getWorkspaceCode(), hiveDataSource);
+                this.sourceManager.addSource(dataSource.getWorkspaceCode(), postgreSQLDataSource);
                 break;
             default:
                 throw new UnsupportedOperationException("暂不支持的数据源类型:" + dataSource.getType());
@@ -244,7 +166,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         if (dataSource == null) {
             throw new IllegalArgumentException("数据源不存在");
         }
-        Source source = sourceManager.removeSource(dataSource.getWorkspaceCode(), dataSource.getCode());
+        Source source = this.sourceManager.removeSource(dataSource.getWorkspaceCode(), dataSource.getCode());
         IoUtil.close(source);
         log.info("移除数据源:{}({})", dataSource.getName(), dataSource.getCode());
     }

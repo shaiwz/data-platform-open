@@ -174,11 +174,12 @@ public class StarRocksDataSource implements JDBCSource {
      */
     @Override
     public void close() {
-        if (dataSource != null) {
+        if (this.dataSource != null) {
             if (this.dataSource instanceof AutoCloseable closeable) {
                 IoUtil.close(closeable);
             }
-            dataSource = null;
+            this.dataSource = null;
+            this.jdbcClient = null;
         }
     }
 

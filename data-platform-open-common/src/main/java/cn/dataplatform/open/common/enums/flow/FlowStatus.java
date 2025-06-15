@@ -14,12 +14,21 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum FlowStatus {
+
+    TBP("待发布"),
     /**
-     * 启用,禁用,暂停
+     * 启用, 启用中的数据流
      */
     ENABLE("启用"),
-    DISABLE("禁用"),
-    PAUSE("暂停");
+    /**
+     * 已被手动暂停的数据流
+     */
+    PAUSE("暂停"),
+    /**
+     * 历史版本的数据流
+     */
+    HISTORY("历史"),
+    ;
 
     private final String name;
 

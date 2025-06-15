@@ -1,5 +1,6 @@
 package cn.dataplatform.open.web.aspect;
 
+import cn.dataplatform.open.common.enums.RedisKey;
 import cn.dataplatform.open.web.annotation.ReSubmitLock;
 import cn.dataplatform.open.web.config.Context;
 import cn.dataplatform.open.web.exception.ReSubmitException;
@@ -35,12 +36,17 @@ import java.util.stream.Stream;
 @Slf4j
 @Order(-9)
 public class ReSubmitLockAspect {
-
     @Resource
     private RedissonClient redissonClient;
 
-    private static final String RESUBMIT_LOCK_KEY_PRE = "rule-engine:resubmit_lock_key_pre";
-
+    /**
+     * 防重复提交锁
+     *
+     * @param joinPoint 切点
+     * @param lock      重复提交锁注解
+     * @return Object
+     * @throws Throwable Throwable
+     */
     @Around("@annotation(lock)")
     public Object around(ProceedingJoinPoint joinPoint, ReSubmitLock lock) throws Throwable {
         Method method = ((MethodSignature) joinPoint.getSignature()).getMethod();
@@ -50,8 +56,7 @@ public class ReSubmitLockAspect {
         UserData userData = Context.getUser();
         //生成lock key
         StringBuilder builder = new StringBuilder();
-        builder.append(RESUBMIT_LOCK_KEY_PRE)
-                .append(StringPool.UNDERSCORE)
+        builder.append(RedisKey.RESUBMIT_LOCK)
                 .append(userData.getId())
                 .append(StringPool.UNDERSCORE)
                 .append(className)
@@ -79,5 +84,6 @@ public class ReSubmitLockAspect {
             log.info("{}方法锁已经移除,Lock Key:{}", method.getName(), lockKey);
         }
     }
+
 
 }

@@ -17,8 +17,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 
 /**
- * 〈一句话功能简述〉<br>
- * 〈发布与订阅〉
+ * 发布与订阅
  *
  * @author 丁乾文
  * @date 2021/6/17
@@ -34,7 +33,7 @@ public class RabbitConfig {
     private static final String FLOW_QUEUE = "dp-data-flow-queue";
     public static final String FLOW_EXCHANGE = "dp-data-flow-exchange";
 
-    private static final String SOURCE_QUEUE = "dp-data-source-queue";
+    public static final String SOURCE_QUEUE = "dp-data-source-queue";
     public static final String SOURCE_EXCHANGE = "dp-data-source-exchange";
 
     private static final String ALIGN_QUEUE = "dp-data-align-queue";

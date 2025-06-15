@@ -76,13 +76,22 @@ public interface DataSourceService extends IService<DataSource> {
      */
     DataSourceDetailResponse detail(Long id);
 
+
+    /**
+     * 数据源连接
+     *
+     * @param id 数据源ID
+     * @return r
+     */
+    <T> T dataSourceConnect(Long id, Class<T> clazz);
+
     /**
      * 获取连接,先从缓存获取
      *
      * @param dataSource 数据库连接配置
      * @return 数据源
      */
-    Object dataSourceConnect(DataSource dataSource);
+    <T> T dataSourceConnect(DataSource dataSource, Class<T> clazz);
 
     /**
      * 获取数据源表信息

@@ -87,7 +87,14 @@ public enum RedisKey {
      * dp:query-template:limit:
      */
     QUERY_TEMPLATE_LIMIT("dp:query-template:limit:", "查询模板限流"),
-    ;
+    /**
+     * dp:rate-limit:
+     */
+    RATE_LIMIT("dp:rate-limit:", "接口限流"),
+    /**
+     * 防止重复提交使用
+     */
+    RESUBMIT_LOCK("dp:resubmit-lock:", "防重复提交锁");
 
     private final String key;
     private final String desc;
