@@ -1,6 +1,5 @@
 package cn.dataplatform.open.support.service.alarm.impl;
 
-
 import cn.dataplatform.open.common.alarm.scene.Scene;
 import cn.dataplatform.open.common.body.AlarmMessageBody;
 import cn.dataplatform.open.common.body.AlarmSceneMessageBody;
@@ -71,7 +70,7 @@ public class AlarmSceneServiceImpl extends ServiceImpl<AlarmSceneMapper, AlarmSc
             // 机器人编码以及模板编码
             alarmMessageBody.setRobotCode(alarmScene.getRobotCode());
             alarmMessageBody.setTemplateCode(alarmScene.getTemplateCode());
-            this.alarmService.alarm(alarmMessageBody, alarmScene.getCode());
+            this.alarmService.alarm(alarmMessageBody, alarmScene);
         }, false);
     }
 

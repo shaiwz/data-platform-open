@@ -34,12 +34,12 @@ public class AlarmRobot implements Serializable {
      */
     private String code;
     private String name;
-    private String type;
+    private String category;
     /**
      * BROADCAST广播
      * POLLING轮询
      */
-    private String mode;
+    private String dispatchStrategy;
     /**
      * json
      */

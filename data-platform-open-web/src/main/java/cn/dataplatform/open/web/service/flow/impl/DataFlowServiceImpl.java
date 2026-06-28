@@ -348,12 +348,6 @@ public class DataFlowServiceImpl extends ServiceImpl<DataFlowMapper, DataFlow> i
                                 throw new ApiException("Kafka接收完消息后，必须有下游节点");
                             }
                         }
-//                        case Design.Node.QueryDoris ignored -> {
-//                            // 如果是doris查询，必须有下游节点
-//                            if (CollUtil.isEmpty(targetNodeIds)) {
-//                                throw new ApiException("Doris查询完数据后，必须有下游节点");
-//                            }
-//                        }
                         case Design.Node.QueryMySQL ignored -> {
                             // 如果是mysql查询，必须有下游节点
                             if (CollUtil.isEmpty(targetNodeIds)) {

@@ -1,5 +1,8 @@
 package cn.dataplatform.open.support.store.entity;
 
+import cn.dataplatform.open.common.component.UniversalJsonTypeHandler;
+import cn.dataplatform.open.common.vo.alarm.robot.Receive;
+import cn.dataplatform.open.common.vo.alarm.robot.Silent;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,6 +11,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -34,20 +38,22 @@ public class AlarmRobot implements Serializable {
      */
     private String code;
     private String name;
-    private String type;
+    private String category;
     /**
      * BROADCAST广播
      * POLLING轮询
      */
-    private String mode;
+    private String dispatchStrategy;
     /**
-     * json
+     * 接收人
      */
-    private String receives;
+    @TableField(typeHandler = UniversalJsonTypeHandler.class)
+    private List<Receive> receives;
     /**
-     * json
+     * 告警沉默关键词
      */
-    private String silent;
+    @TableField(typeHandler = UniversalJsonTypeHandler.class)
+    private List<Silent> silent;
     private String status;
     private String recordLogSwitch;
     private String workspaceCode;

@@ -4,6 +4,10 @@ package cn.dataplatform.open.common.constant;
 public interface Constant {
 
     String REQUEST_ID = "requestId";
+    /**
+     * 工作空间编码
+     */
+    String WORKSPACE_CODE = "workspaceCode";
 
     String TIME_ZONE = "GMT+8";
     String DATE_FORMAT = "yyyy-MM-dd";

@@ -1,6 +1,7 @@
 package cn.dataplatform.open.common.enums.alarm;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -11,19 +12,20 @@ import lombok.AllArgsConstructor;
  * @since 1.0.0
  */
 @AllArgsConstructor
-public enum AlarmRobotType {
+@Getter
+public enum AlarmRobotDispatchStrategy {
 
     /**
-     * 飞书
+     * BROADCAST广播
+     * POLLING轮询
      */
-    LARK,
+    BROADCAST("广播"),
+    POLLING("轮询"),
     /**
-     * 钉钉
+     * 随机
      */
-    DING_TALK,
-    /**
-     * 企业微信
-     */
-    WE_COM
+    RANDOM("随机");
+
+    private final String name;
 
 }

@@ -1,28 +1,29 @@
 SET NAMES utf8mb4;
 
-CREATE DATABASE IF NOT EXISTS `data_platform` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE
+DATABASE IF NOT EXISTS `data_platform` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
 
-USE `data_platform`;
+USE
+`data_platform`;
 
 create table alarm_log
 (
     id             bigint auto_increment
         primary key,
-    request_id     varchar(50)   null,
-    robot_code     varchar(50)   not null comment '机器人编码',
-    scene_code     varchar(50)   null,
-    status         varchar(50)   not null,
-    template_code  varchar(50)   not null comment '模板编码',
-    error_reason   varchar(2000) null,
-    server_name    varchar(50)   not null comment '应用名',
-    instance_id    varchar(50)   not null comment '告警发出服务IP：端口',
-    workspace_code varchar(50)   not null comment '数据所在工作空间',
-    parameter      text          null,
-    create_time    datetime      null,
-    update_time    datetime      null,
-    deleted        tinyint       null comment '0未删除 1已删除'
-)
-    comment '告警日志';
+    request_id     varchar(50) null,
+    robot_code     varchar(50) not null comment '机器人编码',
+    scene_code     varchar(50) null,
+    status         varchar(50) not null,
+    template_code  varchar(50) not null comment '模板编码',
+    error_message  varchar(2000) null,
+    server_name    varchar(50) not null comment '应用名',
+    instance_id    varchar(50) not null comment '告警发出服务IP：端口',
+    workspace_code varchar(50) not null comment '数据所在工作空间',
+    parameter      text null,
+    create_time    datetime null,
+    update_time    datetime null,
+    deleted        tinyint null comment '0未删除 1已删除'
+) comment '告警日志';
 
 create index alarm_log_create_time_index
     on alarm_log (create_time);
@@ -34,22 +35,21 @@ create table alarm_robot
 (
     id                bigint auto_increment
         primary key,
-    code              varchar(50)  not null,
-    name              varchar(50)  not null,
-    type              varchar(20)  not null,
-    mode              varchar(20)  not null,
-    receives          json         not null,
-    silent            json         not null,
-    status            varchar(10)  not null,
-    record_log_switch varchar(10)  not null,
-    workspace_code    varchar(50)  not null,
+    code              varchar(50) not null,
+    name              varchar(50) not null,
+    category          varchar(20) not null,
+    dispatch_strategy varchar(20) not null,
+    receives          json        not null,
+    silent            json        not null,
+    status            varchar(10) not null,
+    record_log_switch varchar(10) not null,
+    workspace_code    varchar(50) not null,
     description       varchar(500) null,
-    create_user_id    bigint       null,
-    create_time       datetime     null,
-    update_time       datetime     null,
-    deleted           tinyint      null comment '0未删除 1已删除'
-)
-    comment '告警机器人';
+    create_user_id    bigint null,
+    create_time       datetime null,
+    update_time       datetime null,
+    deleted           tinyint null comment '0未删除 1已删除'
+) comment '告警机器人';
 
 create index alarm_robot_workspace_code_code_index
     on alarm_robot (workspace_code, code);
@@ -58,21 +58,20 @@ create table alarm_scene
 (
     id             bigint auto_increment
         primary key,
-    code           varchar(50)  null,
+    code           varchar(50) null,
     name           varchar(100) null,
     server_name    varchar(200) null comment '服务名称',
     scene          varchar(200) null comment '场景',
-    robot_code     varchar(50)  null comment '机器人编码',
-    template_code  varchar(50)  null comment '模板编码',
-    status         varchar(50)  null comment '启用状态',
+    robot_code     varchar(50) null comment '机器人编码',
+    template_code  varchar(50) null comment '模板编码',
+    status         varchar(50) null comment '启用状态',
     description    varchar(300) null comment '描述',
-    workspace_code varchar(50)  null comment '数据所在工作空间',
-    create_user_id bigint       null,
-    create_time    datetime     null,
-    update_time    datetime     null,
-    deleted        tinyint      null comment '0未删除 1已删除'
-)
-    comment '告警场景';
+    workspace_code varchar(50) null comment '数据所在工作空间',
+    create_user_id bigint null,
+    create_time    datetime null,
+    update_time    datetime null,
+    deleted        tinyint null comment '0未删除 1已删除'
+) comment '告警场景';
 
 create index wc_sn_s_idx
     on alarm_scene (workspace_code, server_name, scene);
@@ -81,21 +80,20 @@ create table alarm_template
 (
     id                     bigint auto_increment
         primary key,
-    name                   varchar(50)  null,
-    code                   varchar(50)  null comment '编码',
-    mode                   varchar(20)  null,
-    type                   varchar(50)  null comment '模板类型，短信、邮箱、飞书、钉钉、企业微信',
+    name                   varchar(50) null,
+    code                   varchar(50) null comment '编码',
+    mode                   varchar(20) null,
+    type                   varchar(50) null comment '模板类型，短信、邮箱、飞书、钉钉、企业微信',
     external_template_code varchar(100) null comment '外部系统消息模板编码',
-    status                 varchar(10)  null,
-    template_content       text         null,
+    status                 varchar(10) null,
+    template_content       text null,
     description            varchar(300) null,
-    workspace_code         varchar(50)  null comment '数据所在工作空间',
-    create_user_id         bigint       null,
-    create_time            datetime     null,
-    update_time            datetime     null,
-    deleted                tinyint      null comment '0未删除 1已删除'
-)
-    comment '告警模板';
+    workspace_code         varchar(50) null comment '数据所在工作空间',
+    create_user_id         bigint null,
+    create_time            datetime null,
+    update_time            datetime null,
+    deleted                tinyint null comment '0未删除 1已删除'
+) comment '告警模板';
 
 create index wc_c_idx
     on alarm_template (workspace_code, code);
@@ -108,23 +106,22 @@ create table data_flow
     name              varchar(200)                          not null,
     workspace_code    varchar(50)                           not null,
     status            varchar(10) default 'ENABLE'          not null,
-    description       varchar(500)                          null,
-    icon              varchar(100)                          null,
-    current_version   varchar(20)                           null,
-    design            MEDIUMTEXT                            null comment '数据流信息',
-    datasource_codes  json                                  null,
-    publish_version   varchar(20)                           null,
-    enable_alarm      varchar(10) default 'ENABLE'          null,
-    enable_monitor    varchar(10) default 'ENABLE'          null,
-    run_strategy      varchar(50) default 'ALL_INSTANCES'   null comment '运行策略',
-    instance_number   int                                   null comment '运行实例数量',
-    specify_instances json                                  null comment '指定实例',
+    description       varchar(500) null,
+    icon              varchar(100) null,
+    current_version   varchar(20) null,
+    design            MEDIUMTEXT null comment '数据流信息',
+    datasource_codes  json null,
+    publish_version   varchar(20) null,
+    enable_alarm      varchar(10) default 'ENABLE' null,
+    enable_monitor    varchar(10) default 'ENABLE' null,
+    run_strategy      varchar(50) default 'ALL_INSTANCES' null comment '运行策略',
+    instance_number   int null comment '运行实例数量',
+    specify_instances json null comment '指定实例',
     create_user_id    bigint                                not null,
     create_time       datetime    default CURRENT_TIMESTAMP not null,
     update_time       datetime    default CURRENT_TIMESTAMP not null,
     deleted           tinyint     default 0                 not null
-)
-    comment '数据流';
+) comment '数据流';
 
 create index wc_c_idx
     on data_flow (workspace_code, code);
@@ -137,23 +134,22 @@ create table data_flow_publish
     name                varchar(200)                          not null,
     workspace_code      varchar(50)                           not null,
     status              varchar(10) default 'ENABLE'          not null,
-    publish_description varchar(2000)                         null,
-    description         varchar(500)                          null,
-    icon                varchar(100)                          null,
-    design              text                                  null,
-    datasource_codes    json                                  null,
+    publish_description varchar(2000) null,
+    description         varchar(500) null,
+    icon                varchar(100) null,
+    design              text null,
+    datasource_codes    json null,
     version             varchar(10)                           not null,
-    enable_alarm        varchar(10)                           null,
-    enable_monitor      varchar(10)                           null,
-    run_strategy        varchar(50)                           null comment '运行策略',
-    instance_number     int                                   null comment '运行实例数量',
-    specify_instances   json                                  null comment '指定实例',
+    enable_alarm        varchar(10) null,
+    enable_monitor      varchar(10) null,
+    run_strategy        varchar(50) null comment '运行策略',
+    instance_number     int null comment '运行实例数量',
+    specify_instances   json null comment '指定实例',
     create_user_id      bigint                                not null,
     create_time         datetime    default CURRENT_TIMESTAMP not null,
     update_time         datetime    default CURRENT_TIMESTAMP not null,
     deleted             tinyint     default 0                 not null
-)
-    comment '数据流-已发布';
+) comment '数据流-已发布';
 
 create index wc_c__idx
     on data_flow_publish (workspace_code, code);
@@ -162,17 +158,16 @@ create table data_permission
 (
     id                bigint auto_increment
         primary key,
-    user_id           bigint      null,
+    user_id           bigint null,
     record_type       varchar(20) not null comment '数据流  数据源  数据对齐',
     record_id         bigint      not null comment '类型对应的数据ID',
     write_authority   varchar(10) null comment '有写权限',
     publish_authority varchar(10) null comment '发布权限',
-    create_user_id    int         null comment '创建人',
-    create_time       timestamp   null,
-    update_time       timestamp   null,
-    deleted           tinyint     null
-)
-    comment '数据权限表';
+    create_user_id    int null comment '创建人',
+    create_time       timestamp null,
+    update_time       timestamp null,
+    deleted           tinyint null
+) comment '数据权限表';
 
 create index rt_ri_idx
     on data_permission (record_type, record_id);
@@ -189,24 +184,23 @@ create table data_source
     workspace_code         varchar(50)                  not null,
     type                   varchar(50)                  not null,
     url                    varchar(500)                 not null,
-    username               varchar(50)                  null,
-    password               varchar(200)                 null,
-    max_pool_size          int                          null,
-    driver                 varchar(200)                 null,
+    username               varchar(50) null,
+    password               varchar(200) null,
+    max_pool_size          int null,
+    driver                 varchar(200) null,
     status                 varchar(10) default 'ENABLE' not null,
     create_user_id         bigint                       not null,
-    fe_nodes               varchar(600)                 null,
-    be_nodes               varchar(600)                 null,
-    nodes                  varchar(600)                 null,
-    partitioning_algorithm text                         null comment '分表算法等',
-    health_check           varchar(50)                  null comment '是否启用健康检查，ENABLE启用',
-    mask_column            json                         null comment '敏感字段',
-    description            varchar(500)                 null,
+    fe_nodes               varchar(600) null,
+    be_nodes               varchar(600) null,
+    nodes                  varchar(600) null,
+    partitioning_algorithm text null comment '分表算法等',
+    health_check           varchar(50) null comment '是否启用健康检查，ENABLE启用',
+    mask_column            json null comment '敏感字段',
+    description            varchar(500) null,
     create_time            datetime    default (now())  not null,
     update_time            datetime    default (now())  not null,
     deleted                tinyint     default 0        not null comment '0未删除 1已删除'
-)
-    comment '数据源';
+) comment '数据源';
 
 create table debezium_save_point
 (
@@ -219,8 +213,8 @@ create table debezium_save_point
     save_point     varchar(100) not null,
     `key`          varchar(300) not null,
     value          text         not null,
-    create_time    timestamp    null,
-    expire_time    timestamp    null
+    create_time    timestamp null,
+    expire_time    timestamp null
 );
 
 create index wc_fc_cc_sp_idx
@@ -235,8 +229,8 @@ create table debezium_schema_history
     component_code varchar(100) not null,
     instance_id    varchar(50)  not null,
     schema_line    text         not null,
-    create_time    timestamp    null,
-    expire_time    timestamp    null
+    create_time    timestamp null,
+    expire_time    timestamp null
 );
 
 create index wc_fc_cc_idx
@@ -247,18 +241,17 @@ create table idempotent_0
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_0 (expire_time);
@@ -271,18 +264,17 @@ create table idempotent_1
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_1 (expire_time);
@@ -295,18 +287,17 @@ create table idempotent_2
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_2 (expire_time);
@@ -319,18 +310,17 @@ create table idempotent_3
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_3 (expire_time);
@@ -343,18 +333,17 @@ create table idempotent_4
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_4 (expire_time);
@@ -367,18 +356,17 @@ create table idempotent_5
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_5 (expire_time);
@@ -391,18 +379,17 @@ create table idempotent_6
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_6 (expire_time);
@@ -415,18 +402,17 @@ create table idempotent_7
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_7 (expire_time);
@@ -439,18 +425,17 @@ create table idempotent_8
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_8 (expire_time);
@@ -463,18 +448,17 @@ create table idempotent_9
     id             varchar(100) not null comment '消息等ID'
         primary key,
     message_id     varchar(100) null,
-    workspace_code varchar(50)  null,
+    workspace_code varchar(50) null,
     flow_code      varchar(100) null,
     component_code varchar(100) null,
     type           varchar(50)  not null comment 'Kafka、RabbitMQ、RocketMQ',
-    instance_id    varchar(50)  null comment '消费实例',
+    instance_id    varchar(50) null comment '消费实例',
     request_id     varchar(200) null comment '请求链路ID',
-    create_time    timestamp    null comment '消费时间',
-    expire_time    timestamp    null comment '过期时间',
+    create_time    timestamp null comment '消费时间',
+    expire_time    timestamp null comment '过期时间',
     constraint idempotent_0_id_uindex
         unique (id)
-)
-    comment '幂等';
+) comment '幂等';
 
 create index expire_time_index
     on idempotent_9 (expire_time);
@@ -486,18 +470,17 @@ create table message
 (
     id           bigint unsigned auto_increment comment '消息ID'
         primary key,
-    title        varchar(100)                         not null comment '消息标题',
-    content      text                                 not null comment '消息内容',
-    message_type varchar(20)                          not null comment '消息类型：SYSTEM系统消息, NOTICE通知, REMIND提醒',
-    scope_type   varchar(20)                          not null comment '发送范围：ALL全员, WORKSPACE工作空间, SPECIFIC特定用户',
+    title        varchar(100)                       not null comment '消息标题',
+    content      text                               not null comment '消息内容',
+    message_type varchar(20)                        not null comment '消息类型：SYSTEM系统消息, NOTICE通知, REMIND提醒',
+    scope_type   varchar(20)                        not null comment '发送范围：ALL全员, WORKSPACE工作空间, SPECIFIC特定用户',
     sender_id    bigint unsigned                      not null comment '发送者ID（关联user表）',
     is_urgent    tinyint(1) default 0                 not null comment '是否紧急：0否，1是',
-    status       varchar(20)                          not null comment '状态：PUBLISHED已发布, RECALLED已撤回',
-    create_time  datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time  datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    status       varchar(20)                        not null comment '状态：PUBLISHED已发布, RECALLED已撤回',
+    create_time  datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time  datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted      tinyint(1) default 0                 not null comment '是否删除：0否，1是'
-)
-    comment '站内信信息表' collate = utf8mb4_bin;
+) comment '站内信信息表' collate = utf8mb4_bin;
 
 create index idx_create_time
     on message (create_time);
@@ -512,14 +495,13 @@ create table message_user
     message_id  bigint unsigned                      not null comment '消息ID（关联message表）',
     user_id     bigint unsigned                      not null comment '用户ID（关联user表）',
     is_read     tinyint(1) default 0                 not null comment '是否已读：0未读，1已读',
-    read_time   datetime                             null comment '阅读时间',
-    create_time datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
-    deleted     tinyint                              null,
+    read_time   datetime null comment '阅读时间',
+    create_time datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted     tinyint null,
     constraint uk_message_user
         unique (message_id, user_id)
-)
-    comment '站内信与用户关联表' collate = utf8mb4_bin;
+) comment '站内信与用户关联表' collate = utf8mb4_bin;
 
 create index idx_is_read
     on message_user (is_read);
@@ -534,24 +516,23 @@ create table operation_log
 (
     id             bigint auto_increment
         primary key,
-    username       varchar(255)  null comment '操作人',
-    user_id        bigint        null,
-    workspace_code varchar(255)  null comment '工作空间编码',
-    workspace_name varchar(255)  null,
-    `function`     varchar(255)  null,
-    action         varchar(255)  null,
-    record_id      bigint        null,
-    request_arg    text          null,
-    response_arg   text          null,
-    request_id     varchar(100)  null,
-    class_name     varchar(255)  null,
-    method_name    varchar(255)  null,
+    username       varchar(255) null comment '操作人',
+    user_id        bigint null,
+    workspace_code varchar(255) null comment '工作空间编码',
+    workspace_name varchar(255) null,
+    `function`     varchar(255) null,
+    action         varchar(255) null,
+    record_id      bigint null,
+    request_arg    text null,
+    response_arg   text null,
+    request_id     varchar(100) null,
+    class_name     varchar(255) null,
+    method_name    varchar(255) null,
     exception      varchar(2000) null comment '异常',
-    status         varchar(20)   null,
-    cost           bigint        null comment '耗时，单位毫秒',
-    create_time    datetime      null
-)
-    comment '操作日志';
+    status         varchar(20) null,
+    cost           bigint null comment '耗时，单位毫秒',
+    create_time    datetime null
+) comment '操作日志';
 
 create index ct_s_idx
     on operation_log (create_time, status);
@@ -576,8 +557,7 @@ create table permission
     create_time    datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time    datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1)  default 0                 not null comment '是否已被删除：0 否，1 是'
-)
-    comment '@DaoDao 权限' collate = utf8mb4_bin;
+) comment '@DaoDao 权限' collate = utf8mb4_bin;
 
 create index idx_code
     on permission (code);
@@ -594,23 +574,21 @@ create table role
     create_time    datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time    datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1)  default 0                 not null comment '是否已被删除：0 否，1 是',
-    key idx_code (code),
-    key idx_name (name)
-)
-    comment '@DaoDao 角色' collate = utf8mb4_bin;
+    key            idx_code (code),
+    key            idx_name (name)
+) comment '@DaoDao 角色' collate = utf8mb4_bin;
 
 create table role_permission
 (
     id             bigint unsigned auto_increment comment 'id'
         primary key,
-    role_id        bigint                               not null comment '角色 id',
-    permission_id  bigint                               not null comment '权限 id',
+    role_id        bigint                             not null comment '角色 id',
+    permission_id  bigint                             not null comment '权限 id',
     create_user_id bigint unsigned                      not null comment '创建用户',
-    create_time    datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time    datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_time    datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time    datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1) default 0                 not null comment '是否已被删除：0 否，1 是'
-)
-    comment '@DaoDao 角色权限' collate = utf8mb4_bin;
+) comment '@DaoDao 角色权限' collate = utf8mb4_bin;
 
 create index idx_permission_id
     on role_permission (permission_id);
@@ -626,37 +604,35 @@ create table user
     id             bigint unsigned auto_increment comment 'id'
         primary key,
     username       varchar(32)                           not null comment '用户名',
-    gender         varchar(10)                           null,
+    gender         varchar(10) null,
     password       varchar(128)                          not null comment '密码',
     email          varchar(100)                          not null comment '邮箱',
-    phone          varchar(20)                           null,
-    avatar         varchar(255)                          null comment '头像',
+    phone          varchar(20) null,
+    avatar         varchar(255) null comment '头像',
     status         varchar(20) default 'ENABLE'          not null comment '状态：ENABLE 启用，DISABLE 禁用',
-    description    varchar(200)                          null,
+    description    varchar(200) null,
     create_user_id bigint unsigned                       not null comment '创建用户',
     create_time    datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time    datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1)  default 0                 not null comment '是否已被删除：0 否，1 是',
-    key idx_email (email),
-    key idx_username (username)
-)
-    comment '@DaoDao 用户' collate = utf8mb4_bin;
+    key            idx_email (email),
+    key            idx_username (username)
+) comment '@DaoDao 用户' collate = utf8mb4_bin;
 
 create table user_login_log
 (
     id          bigint auto_increment
         primary key,
-    request_id  varchar(100)  null,
-    user_id     bigint        not null,
-    username    varchar(50)   null,
-    ip          varchar(50)   not null,
+    request_id  varchar(100) null,
+    user_id     bigint      not null,
+    username    varchar(50) null,
+    ip          varchar(50) not null,
     browser     varchar(1000) null,
-    os          varchar(200)  null,
+    os          varchar(200) null,
     user_agent  varchar(2000) null,
-    platform    varchar(100)  null,
-    create_time datetime      null
-)
-    comment '登录日志';
+    platform    varchar(100) null,
+    create_time datetime null
+) comment '登录日志';
 
 create index request_id_idx
     on user_login_log (request_id);
@@ -675,8 +651,7 @@ create table user_role
     create_time    datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time    datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1)  default 0                 not null comment '是否已被删除：0 否，1 是'
-)
-    comment '用户角色' collate = utf8mb4_bin;
+) comment '用户角色' collate = utf8mb4_bin;
 
 create index idx_role_id
     on user_role (role_id);
@@ -691,15 +666,14 @@ create table user_workspace
 (
     id             bigint unsigned auto_increment comment 'id'
         primary key,
-    user_id        bigint                               not null comment '用户 id',
-    workspace_id   bigint                               not null comment '工作空间ID',
-    is_admin       tinyint                              null comment '1为工作空间管理员',
+    user_id        bigint                             not null comment '用户 id',
+    workspace_id   bigint                             not null comment '工作空间ID',
+    is_admin       tinyint null comment '1为工作空间管理员',
     create_user_id bigint unsigned                      not null comment '创建用户',
-    create_time    datetime   default CURRENT_TIMESTAMP not null comment '创建时间',
-    update_time    datetime   default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    create_time    datetime default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time    datetime default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1) default 0                 not null comment '是否已被删除：0 否，1 是'
-)
-    comment '用户工作空间' collate = utf8mb4_bin;
+) comment '用户工作空间' collate = utf8mb4_bin;
 
 create index idx_user_id
     on user_workspace (user_id);
@@ -719,10 +693,9 @@ create table workspace
     create_time    datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
     update_time    datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
     deleted        tinyint(1)  default 0                 not null comment '是否已被删除：0 否，1 是',
-    key idx_code (code),
-    key idx_name (name)
-)
-    comment '工作空间' collate = utf8mb4_bin;
+    key            idx_code (code),
+    key            idx_name (name)
+) comment '工作空间' collate = utf8mb4_bin;
 
 
 

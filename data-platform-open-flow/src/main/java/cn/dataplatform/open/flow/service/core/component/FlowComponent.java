@@ -18,10 +18,11 @@
 package cn.dataplatform.open.flow.service.core.component;
 
 import cn.dataplatform.open.common.util.ParallelStreamUtils;
+import cn.dataplatform.open.flow.exception.DataFlowNoRunningException;
+import cn.dataplatform.open.flow.exception.DataFlowRunException;
 import cn.dataplatform.open.flow.service.core.Context;
 import cn.dataplatform.open.flow.service.core.Flow;
 import cn.dataplatform.open.flow.service.core.Transmit;
-import cn.dataplatform.open.flow.service.core.exception.FlowRunException;
 import cn.dataplatform.open.flow.service.core.pack.StopWatch;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -139,15 +140,27 @@ public abstract class FlowComponent {
         }
         // 检测是否还在运行
         if (!this.isRunning()) {
-            throw new FlowRunException("数据流已关闭,不再执行后续节点:" + this.getKey());
+            throw new DataFlowNoRunningException("数据流未运行或已关闭, 不再执行后续节点");
+        }
+        // 线程是否已经被标记中断
+        if (Thread.currentThread().isInterrupted()) {
+            throw new DataFlowRunException("线程已被中断, 不再执行后续节点");
         }
         StopWatch timer = transmit.getTimer();
         // 先停止计时，后续监控节点不再记录子节点总耗时，而是单独计算当前节点的
         if (timer != null) {
             timer.stop();
         }
+        log.info("当前节点: {}({}), 传递数据到下一个节点", this.getName(), this.getCode());
+        // 按照优先级顺序执行下一个节点
         for (List<FlowComponent> flowComponents : this.next) {
-            // 相同优先级并行执行
+            // 如果flowComponents只有一个，不用使用并行流了
+            if (flowComponents.size() == 1) {
+                FlowComponent flowComponentsFirst = flowComponents.getFirst();
+                flowComponentsFirst.run(transmit, context);
+                continue;
+            }
+            // 多个使用并行流并行执行
             ParallelStreamUtils.forEach(flowComponents, flowComponent -> {
                 // 执行下一个节点
                 flowComponent.run(transmit, context);

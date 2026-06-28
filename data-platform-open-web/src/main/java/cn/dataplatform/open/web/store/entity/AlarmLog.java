@@ -48,7 +48,7 @@ public class AlarmLog implements Serializable {
      * 失败原因
      * max length is 500
      */
-    private String errorReason;
+    private String errorMessage;
 
     private String workspaceCode;
     private String parameter;
