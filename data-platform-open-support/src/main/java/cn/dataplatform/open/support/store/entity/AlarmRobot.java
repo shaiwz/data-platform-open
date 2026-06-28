@@ -21,7 +21,7 @@ import java.util.List;
  * @date 2025/2/18
  * @since 1.0.0
  */
-@TableName("alarm_robot")
+@TableName(value = "alarm_robot", autoResultMap = true)
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
