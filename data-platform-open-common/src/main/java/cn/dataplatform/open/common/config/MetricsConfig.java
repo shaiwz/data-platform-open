@@ -1,8 +1,10 @@
 package cn.dataplatform.open.common.config;
 
+import cn.dataplatform.open.common.constant.Constant;
 import cn.dataplatform.open.common.server.ServerManager;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.metrics.MeterRegistryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,22 +20,24 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MetricsConfig {
 
-    private static final String APPLICATION = "application";
-    private static final String INSTANCE_ID = "instanceId";
+    @Value("${spring.application.name:unknown}")
+    private String applicationName;
 
     @Resource
     private ServerManager serverManager;
 
     /**
      * 设置全局tag
+     *
+     * @return MeterRegistryCustomizer
      */
     @Bean
     public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
         return registry -> registry.config().commonTags(
                 // 应用名称 data-platform-flow
-                APPLICATION, this.serverManager.getApplicationName(),
+                Constant.APPLICATION, this.applicationName,
                 // 服务实例ID localhost:8080
-                INSTANCE_ID, this.serverManager.instanceId()
+                Constant.INSTANCE, this.serverManager.instanceId()
         );
     }
 

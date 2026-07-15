@@ -20,14 +20,7 @@ public class ServerMessageExceptionScene implements Scene {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    /**
-     * 队列名称
-     */
-    private String queue;
-    /**
-     * 交换机
-     */
-    private String exchange;
+    private static final String SCENE = "SERVER_MESSAGE_EXCEPTION";
 
     /**
      * 消费类名称
@@ -62,9 +55,14 @@ public class ServerMessageExceptionScene implements Scene {
         this.exceptionStackTrace = ExceptionUtil.stacktraceToString(throwable, 2000);
     }
 
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "SERVER_MESSAGE_EXCEPTION";
+        return SCENE;
     }
 
 }

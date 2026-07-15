@@ -49,7 +49,6 @@ public class AlarmMessageListener {
         } catch (Exception e) {
             String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
             ServerMessageExceptionScene scene = new ServerMessageExceptionScene(e);
-            scene.setQueue(RabbitConfig.ALARM_QUEUE);
             scene.setConsumerClassName(this.getClass().getName());
             scene.setConsumerMethodName(methodName);
             this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmMessageBody.getWorkspaceCode(), scene));

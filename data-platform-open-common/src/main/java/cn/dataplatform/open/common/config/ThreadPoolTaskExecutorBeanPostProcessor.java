@@ -3,6 +3,7 @@ package cn.dataplatform.open.common.config;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -28,18 +29,27 @@ import java.util.Objects;
 @Component
 public class ThreadPoolTaskExecutorBeanPostProcessor implements BeanPostProcessor {
 
+    private static final Field TASK_DECORATOR_FIELD = FieldUtils.getDeclaredField(ThreadPoolTaskExecutor.class,
+            "taskDecorator", true);
+
     @Resource
     @Lazy
     private TaskDecoratorProxy taskDecoratorProxy;
 
+    /**
+     * 在初始化之前进行线程池装饰器的替换
+     *
+     * @param bean     bean
+     * @param beanName bean名称
+     * @return bean
+     * @throws BeansException 异常
+     */
     @SneakyThrows
     @Override
     @NonNull
     public Object postProcessBeforeInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
         if (bean instanceof ThreadPoolTaskExecutor threadPoolTaskExecutor) {
-            Field taskDecoratorField = ThreadPoolTaskExecutor.class.getDeclaredField("taskDecorator");
-            taskDecoratorField.setAccessible(true);
-            TaskDecorator taskDecorator = (TaskDecorator) taskDecoratorField.get(threadPoolTaskExecutor);
+            TaskDecorator taskDecorator = (TaskDecorator) TASK_DECORATOR_FIELD.get(threadPoolTaskExecutor);
             TaskDecorator tracerTaskDecorator = this.taskDecoratorProxy.getTaskDecorator(taskDecorator);
             threadPoolTaskExecutor.setTaskDecorator(tracerTaskDecorator);
             return threadPoolTaskExecutor;

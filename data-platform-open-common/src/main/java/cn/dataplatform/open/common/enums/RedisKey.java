@@ -18,11 +18,11 @@ import java.util.Objects;
 public enum RedisKey {
 
     /**
-     * "dp:flow:error:" 数据流启动、运行异常标记
+     * 数据流启动、运行异常标记
      */
     FLOW_ERROR("dp:flow:error:", "数据流启动、运行异常标记"),
     /**
-     * "dp:flow:heartbeat:"
+     * 数据流心跳
      */
     FLOW_HEARTBEAT("dp:flow:heartbeat:", "数据流心跳"),
     /**
@@ -50,22 +50,16 @@ public enum RedisKey {
      */
     FLOW_COMPONENT_ONLY("dp:flow:component:only:", "数据流单节点执行的组件"),
     /**
-     * "dp:flow:leader:election:lock"
-     */
-    FLOW_LEADER_ELECTION_LOCK("dp:flow:leader:election:lock", "数据流调度选举锁"),
-    /**
-     * dp:flow:rate-limit:
+     * 数据流限流组件使用
      */
     FLOW_RATE_LIMIT("dp:flow:rate-limit:", "数据流限流组件使用"),
     /**
-     * dp:flow:component:message:lock:
-     * <p>
      * 防止启动过程中过慢无心跳导致重复调度
      */
     FLOW_COMPONENT_MESSAGE_LOCK("dp:flow:component:message:lock:", "数据流组件消息锁"),
 
     /**
-     * dp:token:
+     * 登录用户Token
      */
     TOKEN("dp:token:", "登录用户Token"),
 
@@ -75,33 +69,33 @@ public enum RedisKey {
     USER_TOKEN(" dp:user:token", "维护用户ID与Token的关系"),
 
     /**
-     * dp:servers:
+     * 服务注册列表
      */
     SERVERS("dp:servers:", "服务注册"),
 
     /**
-     * dp:alarm:robot:polling:
+     * 告警机器人轮询点位
      */
     ALARM_ROBOT_POLLING("dp:alarm:robot:polling:", "告警机器人轮询"),
     /**
-     * dp:align:job:lock:
+     * 数据对齐任务锁
      */
     ALIGN_JOB_LOCK("dp:align:job:lock:", "数据对齐任务锁"),
 
     /**
-     * dp:query-template:cache:
+     * 查询模板缓存
      */
     QUERY_TEMPLATE_CACHE("dp:query-template:cache:", "查询模板缓存"),
     /**
-     * dp:query-template:limit:
+     * 查询模板限流
      */
     QUERY_TEMPLATE_LIMIT("dp:query-template:limit:", "查询模板限流"),
     /**
-     * dp:scheduled:lock:
+     * (@Scheduled)定时任务全局锁
      */
     SCHEDULED_LOCK("dp:scheduled:lock:", "定时任务全局锁"),
     /**
-     * dp:rate-limit:
+     * 接口限流
      */
     RATE_LIMIT("dp:rate-limit:", "接口限流"),
     /**

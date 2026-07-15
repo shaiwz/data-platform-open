@@ -1,5 +1,6 @@
 package cn.dataplatform.open.common.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Map;
  * @author 丁乾文
  * @since 1.0.0
  */
+@AllArgsConstructor
 @Getter
 public enum ErrorCode {
 
@@ -82,26 +84,5 @@ public enum ErrorCode {
     private final int code;
     private final String msg;
 
-    ErrorCode(int code, String msg) {
-        this.code = code;
-        this.msg = msg;
-    }
-
-    static final Map<Integer, ErrorCode> map = new HashMap<>();
-
-    static {
-        ErrorCode[] values = values();
-        for (ErrorCode value : values) {
-            map.put(value.getCode(), value);
-        }
-    }
-
-    public static String getMagByCode(Integer code) {
-        return map.get(code).getMsg();
-    }
-
-    public static ErrorCode get(Integer code) {
-        return map.get(code);
-    }
 
 }

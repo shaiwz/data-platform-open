@@ -298,7 +298,7 @@ public class DataFlowPublishServiceImpl extends ServiceImpl<DataFlowPublishMappe
                 mySQLQueryFlowComponent.setSelectText(queryMySQL.getSelectText());
                 mySQLQueryFlowComponent.setQueryTimeout(queryMySQL.getQueryTimeout());
                 // 流式查询
-                if (Objects.equals(queryMySQL.getQueryType(), QueryType.STREAMING.getCode())) {
+                if (Objects.equals(queryMySQL.getQueryType(), QueryType.CURSOR.getCode())) {
                     mySQLQueryFlowComponent.setStreamQuery(true);
                 } else {
                     mySQLQueryFlowComponent.setScrollColumn(queryMySQL.getScrollColumn());

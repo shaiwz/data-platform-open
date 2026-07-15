@@ -26,6 +26,7 @@ public enum ServerStatus {
      * 没有心跳检测
      */
     INACTIVE("失活");
+
     private final String name;
 
 }

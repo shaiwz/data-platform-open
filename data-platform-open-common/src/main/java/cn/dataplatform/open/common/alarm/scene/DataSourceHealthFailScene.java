@@ -21,6 +21,8 @@ public class DataSourceHealthFailScene implements Scene {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    public static final String SCENE = "DATA_SOURCE_HEALTH_FAIL";
+
     /**
      * 数据源名称
      */
@@ -32,7 +34,7 @@ public class DataSourceHealthFailScene implements Scene {
     /**
      * 数据源类型
      */
-    private String type;
+    private String dataSourceType;
     /**
      * 数据源状态
      */
@@ -60,9 +62,15 @@ public class DataSourceHealthFailScene implements Scene {
         this.exceptionStackTrace = ExceptionUtil.stacktraceToString(throwable, 2000);
     }
 
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "DATA_SOURCE_HEALTH_FAIL";
+        return SCENE;
     }
 
 }
+

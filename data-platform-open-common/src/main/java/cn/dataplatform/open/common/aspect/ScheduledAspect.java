@@ -59,13 +59,13 @@ public class ScheduledAspect {
                 lock = this.redissonClient.getLock(RedisKey.SCHEDULED_LOCK.build(lockKey));
                 if (!lock.tryLock(scheduledGlobalLock.waitTime(),
                         scheduledGlobalLock.leaseTime(), scheduledGlobalLock.unit())) {
-                    log.info("Scheduled任务未获取到锁:{},当前实例:{}", lockKey, this.serverManager.instanceId());
+                    log.info("Scheduled任务未获取到锁: {}, 当前实例: {}", lockKey, this.serverManager.instanceId());
                     // 获取锁失败，直接返回
                     return null;
                 }
             }
             // 执行定时任务
-            log.info("Scheduled任务获取到锁:{},当前实例:{}", lockKey, this.serverManager.instanceId());
+            log.info("Scheduled任务获取到锁: {}, 当前实例: {}", lockKey, this.serverManager.instanceId());
             return joinPoint.proceed();
         } finally {
             // 如果有锁，并且当前线程持有锁，则释放

@@ -43,9 +43,10 @@ public class AlarmSceneMessageBody implements Serializable {
     @NotNull
     private LocalDateTime alarmTime = LocalDateTime.now();
 
-
     /**
      * 场景编码
+     *
+     * @param scene 场景
      */
     public AlarmSceneMessageBody(Scene scene) {
         this.scene = scene;
@@ -57,8 +58,8 @@ public class AlarmSceneMessageBody implements Serializable {
      * @return 服务名称
      */
     public String getServerName() {
-        if (serverName != null) {
-            return serverName;
+        if (this.serverName != null) {
+            return this.serverName;
         }
         ServerManager serverManager = SpringUtil.getBean(ServerManager.class);
         return serverManager.getApplicationName();
@@ -70,11 +71,12 @@ public class AlarmSceneMessageBody implements Serializable {
      * @return 实例ID
      */
     public String getInstanceId() {
-        if (instanceId != null) {
-            return instanceId;
+        if (this.instanceId != null) {
+            return this.instanceId;
         }
         ServerManager serverManager = SpringUtil.getBean(ServerManager.class);
         return serverManager.instanceId();
     }
 
 }
+

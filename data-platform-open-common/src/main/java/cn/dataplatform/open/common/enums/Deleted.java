@@ -1,5 +1,6 @@
 package cn.dataplatform.open.common.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,6 +11,7 @@ import lombok.Getter;
  * @date 2020/7/14
  * @since 1.0.0
  */
+@AllArgsConstructor
 @Getter
 public enum Deleted {
 
@@ -19,9 +21,5 @@ public enum Deleted {
     ENABLE(0), DISABLE(1);
 
     private final Integer status;
-
-    Deleted(Integer status) {
-        this.status = status;
-    }
 
 }

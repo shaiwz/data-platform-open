@@ -53,6 +53,14 @@ public class AlarmMessageBody implements Serializable {
     @NotNull
     private LocalDateTime alarmTime = LocalDateTime.now();
 
+    /**
+     * 设置参数
+     *
+     * @param parameter 参数
+     */
+    public void setParameter(Map<String, Object> parameter) {
+        this.parameter = parameter;
+    }
 
     /**
      * 设置参数
@@ -69,8 +77,8 @@ public class AlarmMessageBody implements Serializable {
      * @return 服务名称
      */
     public String getServerName() {
-        if (serverName != null) {
-            return serverName;
+        if (this.serverName != null) {
+            return this.serverName;
         }
         ServerManager serverManager = SpringUtil.getBean(ServerManager.class);
         return serverManager.getApplicationName();
@@ -82,12 +90,11 @@ public class AlarmMessageBody implements Serializable {
      * @return 实例ID
      */
     public String getInstanceId() {
-        if (instanceId != null) {
-            return instanceId;
+        if (this.instanceId != null) {
+            return this.instanceId;
         }
         ServerManager serverManager = SpringUtil.getBean(ServerManager.class);
         return serverManager.instanceId();
     }
-
 
 }

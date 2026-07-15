@@ -44,4 +44,10 @@ public interface Constant {
 
     String SCHEMA = "schema";
 
+    String APPLICATION = "application";
+    String INSTANCE = "instance";
+
+    String LOCALHOST = "localhost";
+
+
 }

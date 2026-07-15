@@ -20,6 +20,8 @@ public class GlobalExceptionHandlingScene implements Scene {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final String SCENE = "GLOBAL_EXCEPTION_HANDLING";
+
     /**
      * 异常名称
      */
@@ -44,10 +46,15 @@ public class GlobalExceptionHandlingScene implements Scene {
         this.exceptionStackTrace = ExceptionUtil.stacktraceToString(throwable, 2000);
     }
 
-
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "GLOBAL_EXCEPTION_HANDLING";
+        return SCENE;
     }
 
 }
+

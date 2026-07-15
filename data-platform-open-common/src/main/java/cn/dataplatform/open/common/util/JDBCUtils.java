@@ -27,7 +27,7 @@ public class JDBCUtils {
     @SneakyThrows
     public static void setSchema(DataSourceType type, Connection conn, String schema) {
         switch (type) {
-            case MYSQL, DORIS, STAR_ROCKS -> {
+            case MYSQL, DORIS -> {
                 // MySQL切换schema时，如果和当前schema相同则忽略
                 if (conn instanceof ConnectionImpl connection) {
                     if (Objects.equals(connection.getDatabase(), schema)) {
@@ -41,25 +41,11 @@ public class JDBCUtils {
                 // execSQL USE schema
                 conn.setCatalog(schema);
             }
-            case SQL_SERVER -> {
-                // SQL Server切换schema时，如果和当前schema相同则忽略
-                if (Objects.equals(conn.getCatalog(), schema)) {
-                    return;
-                }
-                // use schema
-                conn.setCatalog(schema);
-            }
-            case CLICKHOUSE, SAP_HANA -> {
-                if (Objects.equals(conn.getSchema(), schema)) {
-                    return;
-                }
-                conn.setSchema(schema);
-            }
-            case ORACLE, DAMENG, POSTGRESQL, HIVE -> {
+            case POSTGRESQL -> {
                 // oracle/dm没有进行缓存，每次都需要执行命令
                 conn.setSchema(schema);
             }
-            case KAFKA, ELASTIC, RABBIT_MQ, ROCKET_MQ, MONGODB, HTTP -> {
+            case KAFKA, ELASTIC -> {
                 // do nothing
             }
             default -> // 兜底方案
@@ -77,13 +63,13 @@ public class JDBCUtils {
     @SneakyThrows
     public static String getSchema(DataSourceType type, Connection conn) {
         switch (type) {
-            case MYSQL, DORIS, STAR_ROCKS, SQL_SERVER -> {
+            case MYSQL, DORIS -> {
                 return conn.getCatalog();
             }
-            case ORACLE, POSTGRESQL, DAMENG, HIVE, SAP_HANA, CLICKHOUSE -> {
+            case POSTGRESQL -> {
                 return conn.getSchema();
             }
-            case KAFKA, ELASTIC, RABBIT_MQ, ROCKET_MQ, MONGODB, HTTP -> {
+            case KAFKA, ELASTIC -> {
                 return null;
             }
             default -> throw new UnsupportedOperationException("不支持的数据源类型: " + type);

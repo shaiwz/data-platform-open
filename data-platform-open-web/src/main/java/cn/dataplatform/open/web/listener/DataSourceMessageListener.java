@@ -84,14 +84,11 @@ public class DataSourceMessageListener {
                     break;
             }
         } catch (Exception e) {
+            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
             ServerMessageExceptionScene scene = new ServerMessageExceptionScene(e);
-            scene.setQueue(RabbitConfig.SOURCE_QUEUE);
             scene.setConsumerClassName(this.getClass().getName());
-            scene.setExchange(RabbitConfig.SOURCE_EXCHANGE);
-            scene.setConsumerMethodName(Thread.currentThread().getStackTrace()[1].getMethodName());
-            AlarmSceneMessageBody alarmSceneMessageBody = new AlarmSceneMessageBody(scene);
-            alarmSceneMessageBody.setWorkspaceCode(dataSourceMessageBody.getWorkspaceCode());
-            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(alarmSceneMessageBody));
+            scene.setConsumerMethodName(methodName);
+            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(dataSourceMessageBody.getWorkspaceCode(), scene));
             throw e;
         } finally {
             MDC.clear();

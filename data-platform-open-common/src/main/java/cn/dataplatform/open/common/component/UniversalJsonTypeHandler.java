@@ -52,7 +52,7 @@ public class UniversalJsonTypeHandler extends Fastjson2TypeHandler {
      */
     public UniversalJsonTypeHandler(Class<?> type) throws SQLException {
         super(type);
-        this.dbType = getDbType();
+        this.dbType = this.getDbType();
     }
 
     /**
@@ -66,7 +66,7 @@ public class UniversalJsonTypeHandler extends Fastjson2TypeHandler {
      */
     public UniversalJsonTypeHandler(Class<?> type, Field field) throws SQLException {
         super(type, field);
-        this.dbType = getDbType();
+        this.dbType = this.getDbType();
     }
 
 
@@ -165,3 +165,4 @@ public class UniversalJsonTypeHandler extends Fastjson2TypeHandler {
     }
 
 }
+

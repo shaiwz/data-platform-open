@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.io.Serial;
 
 /**
- * 启动流程失败告警
+ * 启动数据流失败告警
  *
  * @author dingqianwen
  * @date 2025/4/3
@@ -15,17 +15,19 @@ import java.io.Serial;
  */
 @NoArgsConstructor
 @Data
-public class DataFlowStartFailNoticeScene implements Scene {
+public class DataFlowStartFailNoticeScene implements DataFlowScene {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final String SCENE = "DATA_FLOW_START_FAIL_NOTICE";
+
     /**
-     * 流程名称
+     * 数据流名称
      */
     private String flowName;
     /**
-     * 流程编码
+     * 数据流编码
      */
     private String flowCode;
     /**
@@ -49,9 +51,24 @@ public class DataFlowStartFailNoticeScene implements Scene {
         }
     }
 
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "FLOW_START_FAIL_NOTICE";
+        return SCENE;
+    }
+
+    /**
+     * 当前告警场景关联的数据流编码
+     *
+     * @return 数据流编码
+     */
+    @Override
+    public String getFlowCode() {
+        return this.flowCode;
     }
 
 }

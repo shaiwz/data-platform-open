@@ -16,10 +16,12 @@ import java.io.Serial;
  */
 @NoArgsConstructor
 @Data
-public class DataFlowExecuteExceptionScene implements Scene {
+public class DataFlowExecuteExceptionScene implements DataFlowScene {
 
     @Serial
     private static final long serialVersionUID = 1L;
+
+    private static final String SCENE = "DATA_FLOW_EXECUTE_EXCEPTION";
 
     /**
      * 数据流编码
@@ -59,7 +61,6 @@ public class DataFlowExecuteExceptionScene implements Scene {
      */
     private String exceptionStackTrace;
 
-
     public DataFlowExecuteExceptionScene(Throwable throwable) {
         if (throwable != null) {
             this.exceptionName = throwable.getClass().getSimpleName();
@@ -68,9 +69,24 @@ public class DataFlowExecuteExceptionScene implements Scene {
         }
     }
 
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "FLOW_EXECUTE_EXCEPTION";
+        return SCENE;
+    }
+
+    /**
+     * 当前告警场景关联的数据流编码
+     *
+     * @return 数据流编码
+     */
+    @Override
+    public String getFlowCode() {
+        return this.flowCode;
     }
 
 }

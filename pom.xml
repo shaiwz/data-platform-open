@@ -116,12 +116,12 @@
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>
-                <version>3.45.0</version>
+                <version>4.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>
-                <version>3.45.0</version>
+                <version>4.3.1</version>
             </dependency>
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>

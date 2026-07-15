@@ -68,10 +68,8 @@ public class DataSourceMessageListener {
         } catch (Exception e) {
             String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
             ServerMessageExceptionScene scene = new ServerMessageExceptionScene(e);
-            scene.setQueue(RabbitConfig.SOURCE_QUEUE);
-            scene.setExchange(RabbitConfig.SOURCE_EXCHANGE);
-            scene.setConsumerClassName(this.getClass().getName());
             scene.setConsumerMethodName(methodName);
+            scene.setConsumerClassName(this.getClass().getName());
             this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(dataSourceMessageBody.getWorkspaceCode(), scene));
             throw e;
         } finally {

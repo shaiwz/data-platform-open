@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 〈Mask〉
+ * 标记需要脱敏的字段
  *
  * @author 丁乾文
  * @date 2023/8/14 22:20
@@ -19,6 +19,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Mask {
 
+    /**
+     * 脱敏类型
+     *
+     * @return MaskType
+     */
     MaskType type() default MaskType.GENERAL;
 
 }

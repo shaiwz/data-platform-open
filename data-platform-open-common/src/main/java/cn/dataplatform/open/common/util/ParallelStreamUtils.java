@@ -42,11 +42,20 @@ public class ParallelStreamUtils {
     private static final int CPU_CORES = Runtime.getRuntime().availableProcessors();
 
     /**
+     * 虚拟线程（Virtual Thread）名称前缀，主要用于高效处理 I/O 密集型任务
+     */
+    public static final String VIRTUAL_THREAD_PREFIX = "parallel-vt-";
+    /**
+     * 平台物理线程（Platform Thread）名称前缀，主要用于处理计算/CPU 密集型任务
+     */
+    public static final String PLATFORM_THREAD_PREFIX = "parallel-pt-";
+
+    /**
      * IO密集
      */
     private static final ExecutorService VIRTUAL_EXECUTOR = Executors.newThreadPerTaskExecutor(
             Thread.ofVirtual()
-                    .name("parallel-ve-", 1)
+                    .name(VIRTUAL_THREAD_PREFIX, 1)
                     .factory()
     );
     /**
@@ -59,7 +68,7 @@ public class ParallelStreamUtils {
             TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(1000),
             Thread.ofPlatform()
-                    .name("parallel-pe-", 1)
+                    .name(PLATFORM_THREAD_PREFIX, 1)
                     .factory(),
             new ThreadPoolExecutor.CallerRunsPolicy()
     );
@@ -101,12 +110,12 @@ public class ParallelStreamUtils {
             }
         } catch (InterruptedException e) {
             // 取消其他运行中的Future
-            ParallelStreamUtils.cancelFutures(futures);
+            FutureUtils.cancelFutures(futures);
             Thread.currentThread().interrupt();
             throw new ParallelException("并行处理被中断", e);
         } catch (ExecutionException e) {
             // 取消其他运行中的Future
-            ParallelStreamUtils.cancelFutures(futures);
+            FutureUtils.cancelFutures(futures);
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException r) {
                 throw r;
@@ -115,19 +124,6 @@ public class ParallelStreamUtils {
                 throw error;
             }
             throw new ParallelException("并行处理失败", cause);
-        }
-    }
-
-    /**
-     * 取消Future
-     *
-     * @param futures Future列表
-     */
-    public static void cancelFutures(List<Future<?>> futures) {
-        for (Future<?> future : futures) {
-            if (future != null && !future.isDone()) {
-                future.cancel(true);
-            }
         }
     }
 

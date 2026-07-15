@@ -1,7 +1,12 @@
 package cn.dataplatform.open.common.enums;
 
+import cn.dataplatform.open.common.source.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -17,28 +22,24 @@ public enum DataSourceType {
     /**
      * MySQL等
      */
-    MYSQL("MySQL"),
-    DORIS("Doris"),
-    KAFKA("Kafka"),
-    ELASTIC("Elastic"),
-    STAR_ROCKS("StarRocks"),
-    ORACLE("Oracle"),
-    RABBIT_MQ("RabbitMQ"),
-    ROCKET_MQ("RocketMQ"),
-    POSTGRESQL("PostgreSQL"),
-    SQL_SERVER("SQLServer"),
-    /**
-     * 达梦
-     */
-    DAMENG("Dameng"),
-    CLICKHOUSE("ClickHouse"),
-    HIVE("Hive"),
-    MONGODB("MongoDB"),
-    SAP_HANA("SapHana"),
-    HTTP("Http");
+    MYSQL("MySQL", MySQLDataSource.class),
+    DORIS("Doris", DorisDataSource.class),
+    KAFKA("Kafka", KafkaDataSource.class),
+    ELASTIC("Elastic", ElasticDataSource.class),
+    POSTGRESQL("PostgreSQL", PostgreSQLDataSource.class),
+    ;
 
     private final String value;
+    /**
+     * 数据源类型对应的class类
+     */
+    private final Class<? extends Source> sourceClass;
 
+    /**
+     * 类型编码映射
+     */
+    private static final Map<String, DataSourceType> TYPE_MAP = Arrays.stream(values())
+            .collect(Collectors.toMap(DataSourceType::getValue, e -> e));
 
     /**
      * 根据类型获取枚举
@@ -47,13 +48,20 @@ public enum DataSourceType {
      * @return DataSourceType
      */
     public static DataSourceType getByType(String type) {
-        return switch (type) {
-            case "MySQL" -> MYSQL;
-            case "Doris" -> DORIS;
-            case "Kafka" -> KAFKA;
-            case "Elastic" -> ELASTIC;
-            case "PostgreSQL" -> POSTGRESQL;
-            default -> throw new UnsupportedOperationException("不支持的操作");
-        };
+        DataSourceType dataSourceType = TYPE_MAP.get(type);
+        if (dataSourceType == null) {
+            throw new UnsupportedOperationException("不支持的数据源类型: " + type);
+        }
+        return dataSourceType;
     }
+
+    /**
+     * 是否为jdbc数据源
+     *
+     * @return true是jdbc数据源
+     */
+    public boolean isJdbc() {
+        return JDBCSource.class.isAssignableFrom(this.sourceClass);
+    }
+
 }

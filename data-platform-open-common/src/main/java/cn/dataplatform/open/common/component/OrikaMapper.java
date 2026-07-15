@@ -14,31 +14,49 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 
+/**
+ * 〈一句话功能简述〉<br>
+ * 〈〉
+ *
+ * @author dingqianwen
+ * @date 2026/1/5
+ * @since 1.0.0
+ */
 @Slf4j
 @Configuration
 public class OrikaMapper extends ConfigurableMapper implements ApplicationContextAware {
+
     private ApplicationContext applicationContext;
 
     public OrikaMapper() {
         super(false);
     }
 
-    @SuppressWarnings("rawtypes")
+    /**
+     * 配置MapperFactory
+     *
+     * @param factory MapperFactory
+     */
     @Override
     protected void configure(MapperFactory factory) {
+        @SuppressWarnings("rawtypes")
         Map<String, Mapper> mappers = this.applicationContext.getBeansOfType(Mapper.class);
         for (Mapper<?, ?> mapper : mappers.values()) {
-            log.info("Orika register mapper:{}", mapper.getClass().getName());
             factory.registerMapper(mapper);
         }
-        Map<String, Converter> converters = applicationContext.getBeansOfType(Converter.class);
+        @SuppressWarnings("rawtypes")
+        Map<String, Converter> converters = this.applicationContext.getBeansOfType(Converter.class);
         ConverterFactory converterFactory = factory.getConverterFactory();
         for (Converter<?, ?> converter : converters.values()) {
-            log.info("Orika register converter:{}", converter.getClass().getName());
             converterFactory.registerConverter(converter);
         }
     }
 
+    /**
+     * 设置ApplicationContext
+     *
+     * @param applicationContext a
+     */
     public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         this.init();

@@ -21,9 +21,17 @@ public class ServiceOfflineNoticeScene implements Scene {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    private static final String SCENE = "SERVICE_OFFLINE_NOTICE";
+
+
+    /**
+     * 场景名称
+     *
+     * @return 场景
+     */
     @Override
     public String scene() {
-        return "SERVICE_OFFLINE_NOTICE";
+        return SCENE;
     }
 
 }

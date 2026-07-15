@@ -98,11 +98,10 @@ public class DataFlowComponentMessageListener {
                     break;
             }
         } catch (Exception e) {
+            String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
             ServerMessageExceptionScene scene = new ServerMessageExceptionScene(e);
-            scene.setQueue(RabbitConfig.FLOW_QUEUE);
-            scene.setExchange(RabbitConfig.FLOW_EXCHANGE);
             scene.setConsumerClassName(this.getClass().getName());
-            scene.setConsumerMethodName(Thread.currentThread().getStackTrace()[1].getMethodName());
+            scene.setConsumerMethodName(methodName);
             this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(workspaceCode, scene));
             throw e;
         } finally {

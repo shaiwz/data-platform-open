@@ -17,10 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.stream.Stream;
 
 /**
- * 〈请求日志〉
+ * 请求日志打印
  *
  * @author 丁乾文
- * @date 2019/8/13
+ * @date 2025/1/3
  * @since 1.0.0
  */
 @Order(-20)
@@ -44,20 +44,20 @@ public class RequestLogAspect {
         StringBuilder sb = new StringBuilder("\n");
         long start = System.currentTimeMillis();
         try {
-            sb.append("┏━━━━━━━━请求日志━━━━━━━━\n");
-            sb.append("┣ 链接: ").append(HttpServletUtils.getRequest().getRequestURL()).append("\n");
+            sb.append("┏━━━━━━━━ 请求日志 ━━━━━━━━\n");
+            sb.append("┣━ 链接: ").append(HttpServletUtils.getRequest().getRequestURL()).append("\n");
             Object[] args = this.argsExcludeClass(joinPoint.getArgs());
             String requestAsString = this.objectMapper.writeValueAsString(args);
-            sb.append("┣ 参数: ").append(StrUtil.maxLength(requestAsString, 5000)).append("\n");
+            sb.append("┣━ 参数: ").append(StrUtil.maxLength(requestAsString, 5000)).append("\n");
             Object proceed = joinPoint.proceed();
             String responseAsString = this.objectMapper.writeValueAsString(proceed);
-            sb.append("┣ 结果: ").append(StrUtil.maxLength(responseAsString, 5000)).append("\n");
+            sb.append("┣━ 结果: ").append(StrUtil.maxLength(responseAsString, 5000)).append("\n");
             return proceed;
         } catch (Throwable throwable) {
-            sb.append("┣ 异常: ").append(throwable).append("\n");
+            sb.append("┣━ 异常: ").append(throwable).append("\n");
             throw throwable;
         } finally {
-            sb.append("┣ 时间: ").append(System.currentTimeMillis() - start).append("ms\n");
+            sb.append("┣━ 时间: ").append(System.currentTimeMillis() - start).append("ms\n");
             sb.append("┗━━━━━━━━━━━━━━━━━━━━━━━");
             log.info("{}", sb);
         }
@@ -80,3 +80,4 @@ public class RequestLogAspect {
 
 
 }
+
