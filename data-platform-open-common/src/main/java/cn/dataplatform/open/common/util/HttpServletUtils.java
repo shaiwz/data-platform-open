@@ -1,5 +1,6 @@
 package cn.dataplatform.open.common.util;
 
+import cn.dataplatform.open.common.exception.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
@@ -26,7 +27,7 @@ public class HttpServletUtils {
      * @return HttpServletRequest
      */
     public static HttpServletRequest getRequest() {
-        return getServletRequestAttributes().getRequest();
+        return HttpServletUtils.getServletRequestAttributes().getRequest();
     }
 
     /**
@@ -35,7 +36,7 @@ public class HttpServletUtils {
      * @return HttpServletResponse
      */
     public static HttpServletResponse getResponse() {
-        return getServletRequestAttributes().getResponse();
+        return HttpServletUtils.getServletRequestAttributes().getResponse();
     }
 
     /**
@@ -46,9 +47,10 @@ public class HttpServletUtils {
     private static ServletRequestAttributes getServletRequestAttributes() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (!(attributes instanceof ServletRequestAttributes servletRequestAttributes)) {
-            throw new RuntimeException("not request");
+            throw new ApiException("无法获取当前请求的 RequestAttributes");
         }
         return servletRequestAttributes;
     }
+
 
 }

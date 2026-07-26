@@ -1,5 +1,6 @@
 package cn.dataplatform.open.common.util;
 
+import cn.hutool.core.util.StrUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jodd.util.StringPool;
 import lombok.AccessLevel;
@@ -36,17 +37,38 @@ public class IPUtils {
      */
     public static String getRequestIp() {
         HttpServletRequest request = HttpServletUtils.getRequest();
-        String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (StrUtil.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (StrUtil.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+        if (StrUtil.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (StrUtil.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("CF-Connecting-IP");
+        }
+        if (StrUtil.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        return "0:0:0:0:0:0:0:1".equals(ip) ? "127.0.0.1" : ip;
+        // 处理 X-Forwarded-For 可能包含多个 IP 的情况，取第一个非 unknown 的 IP
+        if (ip != null && ip.contains(",")) {
+            String[] ipArray = ip.split(",");
+            for (String ipAddr : ipArray) {
+                ipAddr = ipAddr.trim();
+                if (!ipAddr.isEmpty() && !"unknown".equalsIgnoreCase(ipAddr)) {
+                    ip = ipAddr;
+                    break;
+                }
+            }
+        }
+        // 处理IPv6本地地址
+        if ("0:0:0:0:0:0:0:1".equals(ip)) {
+            ip = "127.0.0.1";
+        }
+        return ip;
     }
 
     /**
@@ -56,21 +78,21 @@ public class IPUtils {
      */
     private static String getServerIp() {
         String clientIp = StringPool.EMPTY;
-        //根据网卡取本机配置的IP,定义网络接口枚举类
+        // 根据网卡取本机配置的IP,定义网络接口枚举类
         Enumeration<NetworkInterface> allNetInterfaces;
         try {
-            //获得网络接口
+            // 获得网络接口
             allNetInterfaces = NetworkInterface.getNetworkInterfaces();
-            //声明一个InetAddress类型ip地址
+            // 声明一个InetAddress类型ip地址
             InetAddress ip;
-            //遍历所有的网络接口
+            // 遍历所有的网络接口
             while (allNetInterfaces.hasMoreElements()) {
                 NetworkInterface netInterface = allNetInterfaces.nextElement();
-                //同样再定义网络地址枚举类
+                // 同样再定义网络地址枚举类
                 Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
                 while (addresses.hasMoreElements()) {
                     ip = addresses.nextElement();
-                    //InetAddress类包括Inet4Address和Inet6Address
+                    // InetAddress类包括Inet4Address和Inet6Address
                     if ((ip instanceof Inet4Address)) {
                         if (!"127.0.0.1".equals(ip.getHostAddress())) {
                             clientIp = ip.getHostAddress();

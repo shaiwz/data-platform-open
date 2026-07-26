@@ -1,12 +1,12 @@
 package cn.dataplatform.open.common.util;
 
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -30,14 +30,14 @@ public class AesUtils {
      */
     public static String encrypt(String text, String secretKey) {
         try {
-            if (StringUtils.isEmpty(text)) {
+            if (StrUtil.isEmpty(text)) {
                 return text;
             }
             SecretKeySpec sks = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.ENCRYPT_MODE, sks);
             byte[] encrypted = cipher.doFinal(text.getBytes());
-            return Base64.encodeBase64String(encrypted);
+            return java.util.Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception ex) {
             log.warn("AES加密失败", ex);
             return text;
@@ -55,7 +55,7 @@ public class AesUtils {
             SecretKeySpec sks = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), ALGORITHM);
             Cipher cipher = Cipher.getInstance(TRANSFORMATION);
             cipher.init(Cipher.DECRYPT_MODE, sks);
-            byte[] original = cipher.doFinal(Base64.decodeBase64(encrypt));
+            byte[] original = cipher.doFinal(Base64.getDecoder().decode(encrypt));
             return new String(original);
         } catch (Exception ex) {
             log.warn("AES解密失败", ex);
