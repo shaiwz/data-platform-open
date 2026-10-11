@@ -15,6 +15,15 @@
 - QQ：761945125
 - Email：761945125@qq.com
 
+## 最新产品
+
+### [拖拽式规则平台: https://ruleplatform.com](https://ruleplatform.com)
+
+可视化拖拽式规则平台，支持流程规则、判断规则、评分规则及智能决策，提供参数配置、函数扩展、规则复用、模拟运行、版本管理与执行监控，零代码构建复杂业务逻辑。
+
+[企业级可视化、拖拽式业务规则与决策平台](https://mp.weixin.qq.com/s/Y2j4KUvB03cOix3QCHYWLw)  
+[可视化、拖拽式规则引擎与 Jev 强强联合](https://mp.weixin.qq.com/s/jI0NSEQ2P6mDKZ3bSwixkA)
+
 ## 页面预览
 
 ### 全家图
