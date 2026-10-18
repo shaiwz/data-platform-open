@@ -45,12 +45,40 @@ public interface DataSourceService extends IService<DataSource> {
     Boolean update(DataSourceUpdateRequest dataSourceUpdateRequest);
 
     /**
-     * 获取数据源下所有的表
+     * 获取数据源下所有的库
      *
-     * @param request id
-     * @return r
+     * @param request id 或 code
+     * @return 库名列表
      */
-    List<SchemaTableMap> listSchemaTable(ListSchemaTableRequest request);
+    List<String> listSchema(ListSchemaRequest request);
+
+    /**
+     * 获取数据源下所有的库
+     *
+     * @param dataSource 数据源
+     * @return 库名列表
+     */
+    List<String> listSchema(DataSource dataSource);
+
+
+    /**
+     * 获取某库下的表（支持表名模糊、limit）
+     *
+     * @param request id/code、schemaCode、tableCode、limit
+     * @return 表列表
+     */
+    List<SchemaTable> listTable(ListTableRequest request);
+
+    /**
+     * 获取某库下的表（支持表名模糊、limit）
+     *
+     * @param dataSource 数据源
+     * @param schemaCode 库名
+     * @param tableCode  表名（模糊）
+     * @param limit      限制返回的表数量
+     * @return 表列表
+     */
+    List<SchemaTable> listTable(DataSource dataSource, String schemaCode, String tableCode, Integer limit);
 
     /**
      * 删除数据源
@@ -76,7 +104,6 @@ public interface DataSourceService extends IService<DataSource> {
      */
     DataSourceDetailResponse detail(Long id);
 
-
     /**
      * 数据源连接
      *
@@ -93,6 +120,17 @@ public interface DataSourceService extends IService<DataSource> {
      */
     <T> T dataSourceConnect(DataSource dataSource, Class<T> clazz);
 
+
+    /**
+     * 获取数据源表信息
+     *
+     * @param dataSource 数据源
+     * @param schema     库
+     * @param table      表
+     * @return r
+     */
+    TableDetail tableDetail(DataSource dataSource, String schema, String table);
+
     /**
      * 获取数据源表信息
      *
@@ -100,4 +138,5 @@ public interface DataSourceService extends IService<DataSource> {
      * @return r
      */
     TableDetail tableDetail(TableDetailRequest request);
+
 }

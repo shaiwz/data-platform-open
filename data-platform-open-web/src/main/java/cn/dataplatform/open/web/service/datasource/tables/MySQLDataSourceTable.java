@@ -2,10 +2,12 @@ package cn.dataplatform.open.web.service.datasource.tables;
 
 
 import cn.dataplatform.open.common.enums.DataSourceType;
+import cn.dataplatform.open.common.util.IoUtils;
 import cn.dataplatform.open.web.vo.data.source.SchemaTable;
 import cn.dataplatform.open.web.vo.data.source.TableDetail;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
  * @date 2025/3/15
  * @since 1.0.0
  */
+@SuppressWarnings({"SqlNoDataSourceInspection", "SqlResolve", "SqlDialectInspection"})
 @Component
 public class MySQLDataSourceTable implements DataSourceTable {
 
@@ -44,36 +47,85 @@ public class MySQLDataSourceTable implements DataSourceTable {
 
 
     /**
-     * 获取数据源下所有的库表
-     * <p>
-     * SELECT TABLE_SCHEMA  AS `schema`,
-     * TABLE_NAME    AS `table`,
-     * TABLE_COMMENT AS `comment`
-     * FROM INFORMATION_SCHEMA.TABLES
-     * WHERE TABLE_SCHEMA NOT IN ('information_schema', 'mysql', 'performance_schema', 'sys');
+     * 获取此连接下所有的库
      *
-     * @return r
+     * @param connect 数据库连接
+     * @return 库名列表
      */
-    @SuppressWarnings("all")
+    @SuppressWarnings("DuplicatedCode")
     @SneakyThrows
     @Override
-    public List<SchemaTable> schemaTable(Connection connect) {
-        // 查询表 不能存在SQL注入问题 NOT IN使用占位符方式
-        String collect = EXCLUDED_SCHEMA.stream().map(s -> "?").collect(Collectors.joining(","));
-        PreparedStatement preparedStatement = connect.prepareStatement("SELECT TABLE_SCHEMA  AS `schema`,\n" +
+    public List<String> schema(Connection connect) {
+        List<String> excludedSchemas = this.excludedSchema();
+        String collect = excludedSchemas.stream().map(s -> "?").collect(Collectors.joining(","));
+        String sql = "SELECT DISTINCT TABLE_SCHEMA FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA NOT IN ("
+                + collect + ") ORDER BY TABLE_SCHEMA";
+        PreparedStatement ps = connect.prepareStatement(sql);
+        ResultSet rs = null;
+        try {
+            for (int i = 0; i < excludedSchemas.size(); i++) {
+                ps.setString(i + 1, excludedSchemas.get(i));
+            }
+            rs = ps.executeQuery();
+            List<String> list = new ArrayList<>();
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+            return list;
+        } finally {
+            IoUtils.close(rs, ps);
+        }
+    }
+
+
+    /**
+     * 获取此连接下库-表列表
+     *
+     * @param connect    数据库连接
+     * @param schemaCode 库名，为空则查所有库下的表；有值则只查该库下的表
+     * @param likeTable  模糊查询表，如果为空，查询全部表
+     * @param limit      一次最多返回表数量，小于等于0表示不限制
+     * @return 库-表列表
+     */
+    @SuppressWarnings("DuplicatedCode")
+    @SneakyThrows
+    @Override
+    public List<SchemaTable> table(Connection connect, String schemaCode, String likeTable, int limit) {
+        List<String> excludedSchemas = this.excludedSchema();
+        String collect = excludedSchemas.stream().map(s -> "?").collect(Collectors.joining(","));
+        StringBuilder sql = new StringBuilder("SELECT TABLE_SCHEMA  AS `schema`,\n" +
                 "       TABLE_NAME    AS `table`,\n" +
                 "       TABLE_COMMENT AS `comment`\n" +
                 "FROM INFORMATION_SCHEMA.TABLES\n" +
                 "WHERE TABLE_SCHEMA NOT IN (" + collect + ")");
-        List<SchemaTable> arrayList;
+        if (StrUtil.isNotBlank(schemaCode)) {
+            sql.append(" AND TABLE_SCHEMA = ?");
+        }
+        if (StrUtil.isNotBlank(likeTable)) {
+            sql.append(" AND TABLE_NAME LIKE ?");
+        }
+        sql.append(" ORDER BY TABLE_SCHEMA, TABLE_NAME");
+        if (limit > 0) {
+            sql.append(" LIMIT ?");
+        }
+        PreparedStatement preparedStatement = connect.prepareStatement(sql.toString());
         ResultSet resultSet = null;
         try {
-            // 执行查询
-            for (int i = 0; i < EXCLUDED_SCHEMA.size(); i++) {
-                preparedStatement.setString(i + 1, EXCLUDED_SCHEMA.get(i));
+            int idx = 1;
+            for (String s : excludedSchemas) {
+                preparedStatement.setString(idx++, s);
+            }
+            if (StrUtil.isNotBlank(schemaCode)) {
+                preparedStatement.setString(idx++, schemaCode);
+            }
+            if (StrUtil.isNotBlank(likeTable)) {
+                preparedStatement.setString(idx++, "%" + likeTable + "%");
+            }
+            if (limit > 0) {
+                preparedStatement.setInt(idx, limit);
             }
             resultSet = preparedStatement.executeQuery();
-            arrayList = new ArrayList<>();
+            List<SchemaTable> arrayList = new ArrayList<>();
             while (resultSet.next()) {
                 SchemaTable schemaTable = new SchemaTable();
                 schemaTable.setSchema(resultSet.getString(SCHEMA));
@@ -81,11 +133,10 @@ public class MySQLDataSourceTable implements DataSourceTable {
                 schemaTable.setComment(resultSet.getString(COMMENT));
                 arrayList.add(schemaTable);
             }
+            return arrayList;
         } finally {
-            IoUtil.close(resultSet);
-            IoUtil.close(preparedStatement);
+            IoUtils.close(resultSet, preparedStatement);
         }
-        return arrayList;
     }
 
 
@@ -108,17 +159,13 @@ public class MySQLDataSourceTable implements DataSourceTable {
         try {
             // 获取表的基本信息（创建时间、注释等）
             tableInfoStmt = connection.prepareStatement(
-                    "SELECT CREATE_TIME, TABLE_COMMENT, TABLE_ROWS, AVG_ROW_LENGTH, DATA_LENGTH, INDEX_LENGTH " +
+                    "SELECT TABLE_COMMENT, TABLE_ROWS, AVG_ROW_LENGTH, DATA_LENGTH, INDEX_LENGTH " +
                             "FROM INFORMATION_SCHEMA.TABLES " +
                             "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?");
             tableInfoStmt.setString(1, schema);
             tableInfoStmt.setString(2, table);
             tableInfoRs = tableInfoStmt.executeQuery();
             if (tableInfoRs.next()) {
-                Timestamp createTime = tableInfoRs.getTimestamp("CREATE_TIME");
-                if (createTime != null) {
-                    tableDetail.setCreateTime(createTime.toLocalDateTime());
-                }
                 tableDetail.setComment(tableInfoRs.getString("TABLE_COMMENT"));
             }
             // 获取表的列信息
@@ -145,49 +192,11 @@ public class MySQLDataSourceTable implements DataSourceTable {
                 columns.add(column);
             }
             tableDetail.setColumns(columns);
-            // 3. 获取表的索引信息（可选）
-            PreparedStatement indexesStmt = null;
-            ResultSet indexesRs = null;
-            try {
-                indexesStmt = connection.prepareStatement(
-                        "SELECT INDEX_NAME, COLUMN_NAME, NON_UNIQUE " +
-                                "FROM INFORMATION_SCHEMA.STATISTICS " +
-                                "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? " +
-                                "ORDER BY INDEX_NAME, SEQ_IN_INDEX");
-                indexesStmt.setString(1, schema);
-                indexesStmt.setString(2, table);
-                indexesRs = indexesStmt.executeQuery();
-                Map<String, TableDetail.Index> indexes = new LinkedHashMap<>();
-                while (indexesRs.next()) {
-                    String indexName = indexesRs.getString("INDEX_NAME");
-                    ResultSet finalIndexesRs = indexesRs;
-                    TableDetail.Index index = indexes.computeIfAbsent(indexName, k -> {
-                        TableDetail.Index newIndex = new TableDetail.Index();
-                        newIndex.setName(indexName);
-                        try {
-                            newIndex.setUnique(finalIndexesRs.getInt("NON_UNIQUE") == 0);
-                        } catch (SQLException e) {
-                            throw new RuntimeException(e);
-                        }
-                        newIndex.setColumns(new ArrayList<>());
-                        return newIndex;
-                    });
-                    index.addColumn(indexesRs.getString("COLUMN_NAME"));
-                }
-                tableDetail.setIndexes(new ArrayList<>(indexes.values()));
-            } finally {
-                IoUtil.close(indexesRs);
-                IoUtil.close(indexesStmt);
-            }
         } finally {
-            IoUtil.close(columnsRs);
-            IoUtil.close(columnsStmt);
-            IoUtil.close(tableInfoRs);
-            IoUtil.close(tableInfoStmt);
+            IoUtils.close(columnsRs, columnsStmt, tableInfoRs, tableInfoStmt);
         }
         return tableDetail;
     }
-
 
     /**
      * 获取数据源类型
@@ -197,6 +206,16 @@ public class MySQLDataSourceTable implements DataSourceTable {
     @Override
     public DataSourceType getDataSourceType() {
         return DataSourceType.MYSQL;
+    }
+
+    /**
+     * 获取排除的schema
+     *
+     * @return 排除的schema
+     */
+    @Override
+    public List<String> excludedSchema() {
+        return EXCLUDED_SCHEMA;
     }
 
 }

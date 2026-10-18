@@ -172,7 +172,7 @@ public class DebeziumFlowComponent extends FlowComponent {
         if (CollUtil.isEmpty(this.operations)) {
             throw new IllegalArgumentException("监听的操作类型不能为空");
         }
-        Source source = this.sourceManager.getSource(this.getWorkspaceCode(), this.datasourceCode);
+        Source source = this.sourceManager.get(this.getWorkspaceCode(), this.datasourceCode);
         if (source == null) {
             throw new IllegalArgumentException("数据源不存在");
         }

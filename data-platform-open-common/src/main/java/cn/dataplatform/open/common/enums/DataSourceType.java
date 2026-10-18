@@ -61,7 +61,7 @@ public enum DataSourceType {
      * @return true是jdbc数据源
      */
     public boolean isJdbc() {
-        return JDBCSource.class.isAssignableFrom(this.sourceClass);
+        return JdbcSource.class.isAssignableFrom(this.sourceClass);
     }
 
 }

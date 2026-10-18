@@ -2,7 +2,7 @@ package cn.dataplatform.open.flow.service.core.component.query;
 
 import cn.dataplatform.open.common.component.LimitAdjuster;
 import cn.dataplatform.open.common.component.MemoryLimitAdjuster;
-import cn.dataplatform.open.common.source.JDBCSource;
+import cn.dataplatform.open.common.source.JdbcSource;
 import cn.dataplatform.open.common.source.SourceManager;
 import cn.dataplatform.open.flow.service.core.Context;
 import cn.dataplatform.open.flow.service.core.Flow;
@@ -95,7 +95,7 @@ public abstract class JDBCQueryFlowComponent extends FlowComponent {
         if (limit == null || limit <= 0) {
             limit = LIMIT_ADJUSTER.limit();
         }
-        JDBCSource source = this.sourceManager.getSource(this.getWorkspaceCode(), this.getDatasourceCode(), JDBCSource.class);
+        JdbcSource source = this.sourceManager.get(this.getWorkspaceCode(), this.getDatasourceCode(), JdbcSource.class);
         try (Connection connection = source.getConnection()) {
             if (this.streamQuery) {
                 this.streamQuery(context, connection, limit);

@@ -1,3 +1,5 @@
+server:
+  shutdown: graceful
 spring:
   output:
     ansi:
@@ -96,11 +98,6 @@ management:
       endpoint: ${OTLP_LOGGING_ENDPOINT:http://otel-collector:4318/v1/logs}
       export:
         enabled: ${OTLP_LOGGING_ENABLED:false}
-
-server:
-  shutdown: graceful
-
-
 dp:
   password:
     secret-key: ${DP_PASSWORD_SECRET_KEY:0200300020000001}

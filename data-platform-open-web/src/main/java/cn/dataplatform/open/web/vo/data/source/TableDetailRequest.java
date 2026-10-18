@@ -15,8 +15,9 @@ import lombok.Data;
 @Data
 public class TableDetailRequest {
 
-    @NotNull
     private Long id;
+
+    private String code;
 
     @NotBlank
     private String schema;

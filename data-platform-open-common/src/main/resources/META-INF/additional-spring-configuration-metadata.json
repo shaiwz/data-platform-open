@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "dp.password.secret-key",
+      "type": "java.lang.String",
+      "description": "Description for dp.password.secret-key."
+    }
+  ]
+}

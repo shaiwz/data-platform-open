@@ -139,7 +139,7 @@ public class DataFlowPublishServiceImpl extends ServiceImpl<DataFlowPublishMappe
         if (dataFlowPublish == null) {
             throw new RuntimeException("数据流程不存在");
         }
-        this.flowEngine.removeFlow(dataFlowPublish.getWorkspaceCode(), dataFlowPublish.getCode());
+        this.flowEngine.remove(dataFlowPublish.getWorkspaceCode(), dataFlowPublish.getCode());
     }
 
     /**
@@ -196,9 +196,9 @@ public class DataFlowPublishServiceImpl extends ServiceImpl<DataFlowPublishMappe
                 this.recursionFlowComponent(null, nodeMap, edgesGroup, sourceNodeId, flow);
             }
             // 如果原来已经存在
-            this.flowEngine.removeFlow(dataFlowPublish.getWorkspaceCode(), flow.getCode());
+            this.flowEngine.remove(dataFlowPublish.getWorkspaceCode(), flow.getCode());
             // 注册到引擎中
-            this.flowEngine.addFlow(flow);
+            this.flowEngine.add(flow);
             // 后续由调度器进行统一调度
             log.info("加载数据流程成功,待调度执行:{}-{}({})", dataFlowPublish.getWorkspaceCode(),
                     dataFlowPublish.getCode(), dataFlowPublish.getName());
@@ -276,7 +276,7 @@ public class DataFlowPublishServiceImpl extends ServiceImpl<DataFlowPublishMappe
         Field datasourceCodeField = FieldUtils.getField(body.getClass(), "datasourceCode", true);
         if (datasourceCodeField != null) {
             String datasourceCode = (String) datasourceCodeField.get(body);
-            if (this.sourceManager.getSource(flow.getWorkspaceCode(), datasourceCode) == null) {
+            if (this.sourceManager.get(flow.getWorkspaceCode(), datasourceCode) == null) {
                 throw new RuntimeException("数据源不存在，或未启用:" + flow.getWorkspaceCode() + "-" + datasourceCode);
             }
         }

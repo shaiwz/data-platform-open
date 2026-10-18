@@ -1,6 +1,7 @@
 package cn.dataplatform.open.common.source;
 
 import cn.hutool.core.io.IoUtil;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @date 2025/1/5
  * @since 1.0.0
  */
+@Getter
 @Slf4j
 @Component
 public class SourceManager implements Closeable {
@@ -37,7 +39,7 @@ public class SourceManager implements Closeable {
      * @param datasourceCode 数据源编码
      * @return Source
      */
-    public Source getSource(String workspace, String datasourceCode) {
+    public Source get(String workspace, String datasourceCode) {
         Map<String, Source> sourceMap = this.sources.get(workspace);
         if (sourceMap == null) {
             return null;
@@ -53,8 +55,8 @@ public class SourceManager implements Closeable {
      * @param tClass         类型
      * @return 数据源
      */
-    public <T> T getSource(String workspace, String datasourceCode, Class<T> tClass) {
-        Source source = this.getSource(workspace, datasourceCode);
+    public <T> T get(String workspace, String datasourceCode, Class<T> tClass) {
+        Source source = this.get(workspace, datasourceCode);
         if (source == null) {
             throw new IllegalStateException("数据源不存在:" + datasourceCode);
         }
@@ -72,8 +74,8 @@ public class SourceManager implements Closeable {
      * @param workspace 工作空间
      * @param source    数据源
      */
-    public synchronized void addSource(String workspace, Source source) {
-        Source originSource = this.getSource(workspace, source.code());
+    public synchronized void add(String workspace, Source source) {
+        Source originSource = this.get(workspace, source.code());
         // put
         Map<String, Source> sourceMap = this.sources.computeIfAbsent(workspace, (key) -> new ConcurrentHashMap<>());
         sourceMap.put(source.code(), source);
@@ -90,35 +92,12 @@ public class SourceManager implements Closeable {
      * @param datasourceCode 数据源编码
      * @return Source
      */
-    public Source removeSource(String workspace, String datasourceCode) {
+    public Source remove(String workspace, String datasourceCode) {
         Map<String, Source> sourceMap = this.sources.get(workspace);
         if (sourceMap == null) {
             return null;
         }
         return sourceMap.remove(datasourceCode);
-    }
-
-    /**
-     * 获取所有数据源
-     *
-     * @return 所有数据源
-     */
-    public Map<String, Map<String, Source>> getAllSource() {
-        return this.sources;
-    }
-
-    /**
-     * 获取工作空间下的所有数据源
-     *
-     * @param workspace 工作空间
-     * @return 工作空间下的所有数据源
-     */
-    public Map<String, Source> getWorkspaceSources(String workspace) {
-        Map<String, Source> sourceMap = this.sources.get(workspace);
-        if (sourceMap == null) {
-            return Map.of();
-        }
-        return sourceMap;
     }
 
     /**

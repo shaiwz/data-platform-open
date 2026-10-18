@@ -90,7 +90,7 @@ public class FlowEngine implements InitializingBean {
      *
      * @param flow 流程
      */
-    public void addFlow(Flow flow) {
+    public void add(Flow flow) {
         Map<String, Flow> flowMap = this.flows.computeIfAbsent(flow.getWorkspaceCode(),
                 k -> new ConcurrentHashMap<>()
         );
@@ -105,7 +105,7 @@ public class FlowEngine implements InitializingBean {
      * @param flowCode  流程编码
      * @return Flow
      */
-    public Flow getFlow(String workspace, String flowCode) {
+    public Flow get(String workspace, String flowCode) {
         Map<String, Flow> flowMap = this.flows.get(workspace);
         if (flowMap == null) {
             return null;
@@ -119,7 +119,7 @@ public class FlowEngine implements InitializingBean {
      *
      * @return 所有数据流
      */
-    public List<Flow> getAllFlows() {
+    public List<Flow> getAll() {
         if (CollUtil.isEmpty(this.flows)) {
             return Collections.emptyList();
         }
@@ -136,7 +136,7 @@ public class FlowEngine implements InitializingBean {
      * @param workspace 工作空间
      * @param flowCode  流程编码
      */
-    public void removeFlow(String workspace, String flowCode) {
+    public void remove(String workspace, String flowCode) {
         Map<String, Flow> flowMap = this.flows.get(workspace);
         if (flowMap == null) {
             return;
@@ -276,7 +276,7 @@ public class FlowEngine implements InitializingBean {
      * @param code          流程编码
      */
     public void start(String workspaceCode, String code) {
-        Flow flow = this.getFlow(workspaceCode, code);
+        Flow flow = this.get(workspaceCode, code);
         if (flow == null) {
             log.error("流程:{} 不存在", code);
             return;
@@ -343,7 +343,7 @@ public class FlowEngine implements InitializingBean {
      * @param componentCode 组件编码
      */
     public void start(String workspaceCode, String flowCode, String componentCode) {
-        Flow flow = this.getFlow(workspaceCode, flowCode);
+        Flow flow = this.get(workspaceCode, flowCode);
         if (flow == null) {
             log.error("流程:{}-{}不存在", workspaceCode, flowCode);
             return;
@@ -376,7 +376,7 @@ public class FlowEngine implements InitializingBean {
      * @param componentCode 组件编码
      */
     public void stop(String workspaceCode, String flowCode, String componentCode) {
-        Flow flow = this.getFlow(workspaceCode, flowCode);
+        Flow flow = this.get(workspaceCode, flowCode);
         if (flow == null) {
             log.error("流程:{}-{} 不存在", workspaceCode, flowCode);
             return;

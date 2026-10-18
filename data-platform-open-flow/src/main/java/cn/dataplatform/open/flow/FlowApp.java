@@ -30,7 +30,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * 〈App〉
+ * 数据流服务启动类
  *
  * @author dqw
  * @since 1.0.0

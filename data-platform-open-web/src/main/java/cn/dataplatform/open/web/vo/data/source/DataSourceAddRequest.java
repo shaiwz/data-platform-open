@@ -1,8 +1,11 @@
 package cn.dataplatform.open.web.vo.data.source;
 
 
+import cn.dataplatform.open.common.annotation.Mask;
 import cn.dataplatform.open.common.enums.DataSourceType;
+import cn.dataplatform.open.common.enums.MaskType;
 import cn.dataplatform.open.common.enums.Status;
+import cn.dataplatform.open.common.vo.model.KeyValue;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -31,7 +34,7 @@ public class DataSourceAddRequest {
      * @see DataSourceType
      */
     @NotEmpty
-    private String type;
+    private String dataSourceType;
 
     @Size(max = 255)
     private String url;
@@ -42,10 +45,9 @@ public class DataSourceAddRequest {
     @Size(max = 32)
     private String username;
 
+    @Mask(type = MaskType.PASSWORD)
     @Size(max = 128)
     private String password;
-
-    private Integer maxPoolSize;
 
     /**
      * 启用,禁用
@@ -56,8 +58,6 @@ public class DataSourceAddRequest {
     @Pattern(regexp = "^(ENABLE|DISABLE)$")
     private String status;
 
-    private String feNodes;
-    private String beNodes;
     /**
      * 分表规则
      */
@@ -65,7 +65,10 @@ public class DataSourceAddRequest {
 
     private String healthCheck;
 
-    private List<MarkColumn> maskColumn;
+    /**
+     * 连接配置
+     */
+    private List<KeyValue> properties;
 
     private String description;
 

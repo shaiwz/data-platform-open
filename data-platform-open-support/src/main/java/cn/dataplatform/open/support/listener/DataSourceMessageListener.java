@@ -48,19 +48,17 @@ public class DataSourceMessageListener {
         String requestId = messaging.getHeaders().get(Constant.REQUEST_ID, String.class);
         MDC.put(Constant.REQUEST_ID, requestId);
         DataSourceMessageBody dataSourceMessageBody = messaging.getPayload();
+        String workspaceCode = dataSourceMessageBody.getWorkspaceCode();
         try {
-            log.info("数据源消息:{}", dataSourceMessageBody);
+            log.info("数据源消息: {}", dataSourceMessageBody);
+            String code = dataSourceMessageBody.getDataSourceCode();
             DataSourceMessageBody.Type type = dataSourceMessageBody.getType();
             switch (type) {
-                case UPDATE:
-                    this.dataSourceService.remove(dataSourceMessageBody.getId());
-                    this.dataSourceService.load(dataSourceMessageBody.getId());
-                    break;
-                case LOAD:
-                    this.dataSourceService.load(dataSourceMessageBody.getId());
+                case UPDATE, LOAD:
+                    this.dataSourceService.load(workspaceCode, code);
                     break;
                 case REMOVE:
-                    this.dataSourceService.remove(dataSourceMessageBody.getId());
+                    this.dataSourceService.remove(workspaceCode, code);
                     break;
                 default:
                     break;
@@ -70,7 +68,7 @@ public class DataSourceMessageListener {
             ServerMessageExceptionScene scene = new ServerMessageExceptionScene(e);
             scene.setConsumerMethodName(methodName);
             scene.setConsumerClassName(this.getClass().getName());
-            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(dataSourceMessageBody.getWorkspaceCode(), scene));
+            this.applicationEventPublisher.publishEvent(new AlarmSceneEvent(workspaceCode, scene));
             throw e;
         } finally {
             MDC.clear();

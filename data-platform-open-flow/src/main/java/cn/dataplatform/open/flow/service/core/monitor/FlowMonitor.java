@@ -83,7 +83,7 @@ public class FlowMonitor {
      */
     public void errorWithAlarm(String workspaceCode, String flowCode, Throwable e, FlowError.ErrorType errorType) {
         this.error(workspaceCode, flowCode, e, errorType);
-        Flow flow = this.flowEngine.getFlow(workspaceCode, flowCode);
+        Flow flow = this.flowEngine.get(workspaceCode, flowCode);
         if (flow == null) {
             return;
         }
@@ -107,7 +107,7 @@ public class FlowMonitor {
         String workspaceCode = flowComponent.getWorkspaceCode();
         String flowCode = flowComponent.getFlowCode();
         this.error(workspaceCode, flowCode, e, errorType);
-        Flow flow = this.flowEngine.getFlow(workspaceCode, flowCode);
+        Flow flow = this.flowEngine.get(workspaceCode, flowCode);
         if (flow == null) {
             return;
         }

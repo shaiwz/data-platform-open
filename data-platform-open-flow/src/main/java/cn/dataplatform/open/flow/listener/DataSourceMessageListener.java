@@ -49,19 +49,18 @@ public class DataSourceMessageListener {
         String requestId = messaging.getHeaders().get(Constant.REQUEST_ID, String.class);
         MDC.put(Constant.REQUEST_ID, requestId);
         DataSourceMessageBody dataSourceMessageBody = messaging.getPayload();
+        String workspaceCode = dataSourceMessageBody.getWorkspaceCode();
         try {
             log.info("数据源消息:{}", dataSourceMessageBody);
             DataSourceMessageBody.Type type = dataSourceMessageBody.getType();
+            String dataSourceCode = dataSourceMessageBody.getDataSourceCode();
             switch (type) {
                 case UPDATE:
-                    this.dataSourceService.remove(dataSourceMessageBody.getId());
-                    this.dataSourceService.load(dataSourceMessageBody.getId());
-                    break;
                 case LOAD:
-                    this.dataSourceService.load(dataSourceMessageBody.getId());
+                    this.dataSourceService.load(workspaceCode, dataSourceCode);
                     break;
                 case REMOVE:
-                    this.dataSourceService.remove(dataSourceMessageBody.getId());
+                    this.dataSourceService.remove(workspaceCode, dataSourceCode);
                     break;
                 default:
                     break;

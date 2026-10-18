@@ -133,7 +133,7 @@ public class FlowComponentMonitor {
      * @return 是否需要监控 true:需要
      */
     private boolean needToMonitor(FlowComponent flowComponent) {
-        Flow flow = this.flowEngine.getFlow(flowComponent.getWorkspaceCode(), flowComponent.getFlowCode());
+        Flow flow = this.flowEngine.get(flowComponent.getWorkspaceCode(), flowComponent.getFlowCode());
         if (flow == null) {
             return false;
         }

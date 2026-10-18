@@ -2,13 +2,11 @@ package cn.dataplatform.open.web.listener;
 
 
 import cn.dataplatform.open.common.alarm.scene.ServerMessageExceptionScene;
-import cn.dataplatform.open.common.body.AlarmSceneMessageBody;
 import cn.dataplatform.open.common.body.DataSourceMessageBody;
 import cn.dataplatform.open.common.constant.Constant;
 import cn.dataplatform.open.common.event.AlarmSceneEvent;
 import cn.dataplatform.open.web.config.RabbitConfig;
 import cn.dataplatform.open.web.service.datasource.impl.DataSourceServiceImpl;
-import cn.dataplatform.open.web.store.entity.DataSource;
 import cn.hutool.cache.impl.TimedCache;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -56,12 +54,7 @@ public class DataSourceMessageListener {
         DataSourceMessageBody dataSourceMessageBody = messaging.getPayload();
         try {
             log.info("数据源消息:{}", dataSourceMessageBody);
-            DataSource dataSource = this.dataSourceService.getById(dataSourceMessageBody.getId());
-            if (dataSource == null) {
-                log.warn("数据源不存在:{}", dataSourceMessageBody.getId());
-                return;
-            }
-            String code = dataSource.getCode();
+            String code = dataSourceMessageBody.getDataSourceCode();
             DataSourceMessageBody.Type type = dataSourceMessageBody.getType();
             switch (type) {
                 case UPDATE:

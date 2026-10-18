@@ -16,15 +16,15 @@ public interface DataSourceService extends IService<DataSource> {
     /**
      * 加载数据源
      *
-     * @param id 数据源ID
+     * @param dataSourceCode 数据源编码
      */
-    void load(Long id);
+    void load(String workspaceCode, String dataSourceCode);
 
     /**
      * 移除数据源
      *
-     * @param id 数据源ID
+     * @param dataSourceCode 数据源编码
      */
-    void remove(Long id);
+    void remove(String workspaceCode, String dataSourceCode);
 
 }

@@ -42,8 +42,7 @@ public interface ConnectorConfigure {
             case PostgreSQLDataSource ignored -> {
                 return new PostgreSQLConnectorConfigure();
             }
-            // ...
-            default -> throw new RuntimeException("不支持的数据源类型");
+            default -> throw new UnsupportedOperationException("不支持的数据源类型: " + source.type());
         }
     }
 

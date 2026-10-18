@@ -89,7 +89,7 @@ public class DataFlowDispatchMessageListener {
         DataFlowDispatchMessageBody.Type type = payload.getType();
         String workspaceCode = payload.getWorkspaceCode();
         String flowCode = payload.getFlowCode();
-        Flow flow = this.flowEngine.getFlow(workspaceCode, flowCode);
+        Flow flow = this.flowEngine.get(workspaceCode, flowCode);
         if (flow == null) {
             log.info("数据流调度消息:数据流不存在:{}-{}-{}", workspaceCode, flowCode, instanceId);
             return;
@@ -97,7 +97,7 @@ public class DataFlowDispatchMessageListener {
         MDC.put(Constant.FLOW_CODE, flow.getCode());
         // 如果是关闭数据流
         if (Objects.equals(type, DataFlowDispatchMessageBody.Type.STOP)) {
-            this.flowEngine.removeFlow(workspaceCode, flowCode);
+            this.flowEngine.remove(workspaceCode, flowCode);
             return;
         }
         try {

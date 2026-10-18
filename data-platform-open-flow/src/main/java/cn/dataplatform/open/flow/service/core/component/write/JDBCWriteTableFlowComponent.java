@@ -1,6 +1,6 @@
 package cn.dataplatform.open.flow.service.core.component.write;
 
-import cn.dataplatform.open.common.source.JDBCSource;
+import cn.dataplatform.open.common.source.JdbcSource;
 import cn.dataplatform.open.common.source.SourceManager;
 import cn.dataplatform.open.common.util.MapUtils;
 import cn.dataplatform.open.flow.service.core.Context;
@@ -119,7 +119,7 @@ public abstract class JDBCWriteTableFlowComponent extends FlowComponent {
         }
         log.info("写入数据:" + this.getCode() + ",数据数量:" + transmitRecord.size());
         // 获取数据源
-        JDBCSource jdbcSource = this.sourceManager.getSource(this.getWorkspaceCode(), this.getDatasourceCode(), JDBCSource.class);
+        JdbcSource jdbcSource = this.sourceManager.get(this.getWorkspaceCode(), this.getDatasourceCode(), JdbcSource.class);
         Connection connection = jdbcSource.getConnection(false);
         try {
             // 查询表结构

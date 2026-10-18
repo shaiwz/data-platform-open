@@ -2,6 +2,7 @@ package cn.dataplatform.open.web.service.datasource.test;
 
 import cn.dataplatform.open.common.enums.DataSourceType;
 import cn.dataplatform.open.common.exception.ApiException;
+import cn.hutool.core.exceptions.ExceptionUtil;
 import cn.hutool.core.util.StrUtil;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
@@ -50,7 +51,10 @@ public class KafkaDataSourceTest implements DataSourceTest {
             String clusterId = result.clusterId().get(5, TimeUnit.SECONDS);
             return clusterId != null;
         } catch (Exception e) {
-            throw new ApiException(e);
+            Throwable rootCause = ExceptionUtil.getRootCause(e);
+            // 修复异常信息为空的问题
+            throw new ApiException(StrUtil.blankToDefault(e.getMessage(), "测试连接失败"),
+                    rootCause);
         }
     }
 

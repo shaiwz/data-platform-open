@@ -1,37 +1,19 @@
 package cn.dataplatform.open.web.service.datasource.test;
 
-
 import cn.dataplatform.open.common.enums.DataSourceType;
-import cn.dataplatform.open.common.exception.ApiException;
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
-import java.sql.*;
-
 /**
+ * PostgreSQL数据源测试
+ *
  * @author DaoDao
  */
 @Component
-public class PostgreSQLDataSourceTest implements DataSourceTest {
+public class PostgreSQLDataSourceTest extends JdbcDataSourceTest {
 
-    /**
-     * 测试连接
-     *
-     * @param url      url
-     * @param username 用户名
-     * @param password 密码
-     * @return r
-     */
-    @Override
-    public boolean testConnection(String url, String username, String password) {
-        try (Connection connection = DriverManager.getConnection(url, username, password)) {
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select 1");
-            return resultSet.next();
-        } catch (SQLException e) {
-            throw new ApiException(e);
-        }
-    }
-
+    @Getter
+    private final String connectionTestQuery = "SELECT 1";
 
     /**
      * 获取数据源类型

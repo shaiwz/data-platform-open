@@ -13,9 +13,9 @@ public class DataSourceMessageBody implements Serializable {
 
     private Type type;
 
-    private Long id;
-
     private String workspaceCode;
+
+    private String dataSourceCode;
 
 
     public enum Type {

@@ -2,6 +2,7 @@ package cn.dataplatform.open.flow.service.core.component.event.connector;
 
 import cn.dataplatform.open.common.source.MySQLDataSource;
 import cn.dataplatform.open.common.source.Source;
+import cn.dataplatform.open.common.util.JdbcUtils;
 import cn.dataplatform.open.flow.service.core.component.event.DebeziumFlowComponent;
 import cn.hutool.core.util.RandomUtil;
 import io.debezium.config.Configuration;
@@ -30,27 +31,27 @@ public class MySQLConnectorConfigure implements ConnectorConfigure {
      */
     @Override
     public void configure(DebeziumFlowComponent debeziumFlowComponent, Source source, Configuration.Builder builder) {
+        // 连接器的Java类名称
+        builder.with("connector.class", MySqlConnector.class.getName());
         MySQLDataSource mySQLDataSource = (MySQLDataSource) source;
-        String hostname = mySQLDataSource.getHostname();
         // jdbc:mysql://**:3306/data_platform
-        Integer port = mySQLDataSource.getPort();
         // 数据库的hostname
-        builder.with("database.hostname", hostname);
+        builder.with("database.hostname", JdbcUtils.getHostname(mySQLDataSource.type(), mySQLDataSource.getUrl()));
         // 端口
-        builder.with("database.port", port);
+        builder.with("database.port", JdbcUtils.getPort(mySQLDataSource.type(), mySQLDataSource.getUrl()));
         // 用户名
         builder.with("database.user", mySQLDataSource.getUsername());
         // 密码
         builder.with("database.password", mySQLDataSource.getPassword());
-        // 连接器的Java类名称
-        builder.with("connector.class", MySqlConnector.class.getName());
         // 包含的数据库列表,你的数据库
         builder.with("database.include.list", debeziumFlowComponent.getSchemas());
+        // 推荐自己设置唯一的server.id
         if (debeziumFlowComponent.getDatabaseServerId() != null) {
             builder.with("database.server.id", debeziumFlowComponent.getDatabaseServerId());
         } else {
             // 12000-15000随机数
-            builder.with("database.server.id", RandomUtil.randomInt(12000, 15000));
+            // 修复随机id冲突引起的报错，改为110000000-120000000
+            builder.with("database.server.id", RandomUtil.randomInt(110000000, 120000000));
         }
     }
 

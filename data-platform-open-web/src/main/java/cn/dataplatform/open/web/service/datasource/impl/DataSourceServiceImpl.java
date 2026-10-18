@@ -19,10 +19,10 @@ package cn.dataplatform.open.web.service.datasource.impl;
 
 import cn.dataplatform.open.common.body.DataSourceMessageBody;
 import cn.dataplatform.open.common.component.OrikaMapper;
-import cn.dataplatform.open.common.constant.Constant;
 import cn.dataplatform.open.common.enums.Status;
 import cn.dataplatform.open.common.event.DataSourceEvent;
 import cn.dataplatform.open.common.exception.ApiException;
+import cn.dataplatform.open.common.exception.DataSourceException;
 import cn.dataplatform.open.common.vo.base.PageBase;
 import cn.dataplatform.open.common.vo.base.PageRequest;
 import cn.dataplatform.open.common.vo.base.PageResult;
@@ -51,7 +51,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.zaxxer.hikari.HikariDataSource;
@@ -63,6 +62,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +88,14 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
      */
     @Getter
     public TimedCache<String, Object> defaultDataSourceCache = CacheUtil.newTimedCache(1800 * 1000L);
+
+    /**
+     * 控制台截断表阈值
+     * <p>
+     * 默认展示*个表信息，剩余的按照表名称模糊搜索
+     */
+    @Value("${dp.datasource.schema-table-truncate-threshold:100}")
+    private int schemaTableTruncateThreshold;
 
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
@@ -134,8 +142,8 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         Page<DataSource> dataSourcePage = this.lambdaQuery().like(StrUtil.isNotBlank(query.getName()), DataSource::getName, query.getName())
                 .eq(StrUtil.isNotBlank(query.getCode()), DataSource::getCode, query.getCode())
                 .eq(StrUtil.isNotBlank(query.getStatus()), DataSource::getStatus, query.getStatus())
-                .eq(StrUtil.isNotBlank(query.getType()), DataSource::getType, query.getType())
-                .in(CollUtil.isNotEmpty(query.getTypes()), DataSource::getType, query.getTypes())
+                .eq(StrUtil.isNotBlank(query.getType()), DataSource::getDataSourceType, query.getType())
+                .in(CollUtil.isNotEmpty(query.getTypes()), DataSource::getDataSourceType, query.getTypes())
                 .eq(DataSource::getWorkspaceCode, workspace.getCode())
                 .orderByDesc(DataSource::getStatus, DataSource::getCreateTime)
                 .page(new Page<>(page.getCurrent(), page.getSize()));
@@ -175,7 +183,6 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         dataSource.setCode(UUID.fastUUID().toString(true));
         dataSource.setCreateUserId(user.getId());
         dataSource.setWorkspaceCode(workspace.getCode());
-        dataSource.setMaskColumn(JSON.toJSONString(dataSourceAddRequest.getMaskColumn()));
         if (StrUtil.isNotBlank(dataSourceAddRequest.getPassword())) {
             dataSource.setPassword(this.passwordEncAndDecService.encrypt(dataSourceAddRequest.getPassword()));
         }
@@ -183,7 +190,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         if (dataSource.getStatus().equals(Status.ENABLE.name())) {
             DataSourceMessageBody messageBody = new DataSourceMessageBody();
             messageBody.setType(DataSourceMessageBody.Type.LOAD);
-            messageBody.setId(dataSource.getId());
+            messageBody.setDataSourceCode(dataSource.getCode());
             messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
             this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
         }
@@ -218,7 +225,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
                 && Objects.equals(dataSourceUpdateRequest.getStatus(), Status.ENABLE.name())) {
             DataSourceMessageBody messageBody = new DataSourceMessageBody();
             messageBody.setType(DataSourceMessageBody.Type.LOAD);
-            messageBody.setId(dataSource.getId());
+            messageBody.setDataSourceCode(dataSource.getCode());
             messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
             this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
         } else if (Objects.equals(dataSource.getStatus(), Status.ENABLE.name())
@@ -226,7 +233,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
             // 如果是启用改为关闭
             DataSourceMessageBody messageBody = new DataSourceMessageBody();
             messageBody.setType(DataSourceMessageBody.Type.REMOVE);
-            messageBody.setId(dataSource.getId());
+            messageBody.setDataSourceCode(dataSource.getCode());
             messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
             this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
         } else {
@@ -234,7 +241,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
             if (Objects.equals(dataSourceUpdateRequest.getStatus(), Status.ENABLE.name())) {
                 DataSourceMessageBody messageBody = new DataSourceMessageBody();
                 messageBody.setType(DataSourceMessageBody.Type.UPDATE);
-                messageBody.setId(dataSource.getId());
+                messageBody.setDataSourceCode(dataSource.getCode());
                 messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
                 this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
             }
@@ -248,9 +255,74 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
             }
         }
         this.orikaMapper.map(dataSourceUpdateRequest, dataSource);
-        dataSource.setMaskColumn(JSON.toJSONString(dataSourceUpdateRequest.getMaskColumn()));
         this.updateById(dataSource);
         return true;
+    }
+
+    /**
+     * 获取数据源下所有的库
+     *
+     * @param request id 或 code
+     * @return 库名列表
+     */
+    @Override
+    public List<String> listSchema(ListSchemaRequest request) {
+        DataSource dataSource = this.getDataSource(request.getId(), request.getCode());
+        return this.listSchema(dataSource);
+    }
+
+
+    /**
+     * 获取数据源下所有的库
+     *
+     * @param dataSource 数据源
+     * @return 库名列表
+     */
+    @Override
+    public List<String> listSchema(DataSource dataSource) {
+        javax.sql.DataSource jdbcDataSource = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
+        try (Connection connection = jdbcDataSource.getConnection()) {
+            DataSourceTable dataSourceTable = this.dataSourceTableManager.get(dataSource.getDataSourceType());
+            return dataSourceTable.schema(connection);
+        } catch (Exception e) {
+            throw new ApiException("获取数据源库列表失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 获取某库下的表（支持表名模糊、limit）
+     *
+     * @param request id/code、schemaCode、tableCode、limit
+     * @return 表列表
+     */
+    @Override
+    public List<SchemaTable> listTable(ListTableRequest request) {
+        DataSource dataSource = this.getDataSource(request.getId(), request.getCode());
+        String schemaCode = request.getSchemaCode();
+        String tableCode = request.getTableCode();
+        Integer limit = request.getLimit();
+        return this.listTable(dataSource, schemaCode, tableCode, limit);
+    }
+
+    /**
+     * 获取某库下的表（支持表名模糊、limit）
+     *
+     * @param dataSource 数据源
+     * @param schemaCode 库名
+     * @param tableCode  表名（模糊）
+     * @param limit      限制返回的表数量
+     * @return 表列表
+     */
+    @Override
+    public List<SchemaTable> listTable(DataSource dataSource, String schemaCode, String tableCode, Integer limit) {
+        int l = limit != null ? limit : this.schemaTableTruncateThreshold;
+        javax.sql.DataSource jdbcDataSource = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
+        try (Connection connection = jdbcDataSource.getConnection()) {
+            DataSourceTable dataSourceTable = this.dataSourceTableManager.get(dataSource.getDataSourceType());
+            return dataSourceTable.table(connection, schemaCode, tableCode, l);
+        } catch (Exception e) {
+            throw new ApiException("获取数据源表列表失败: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -283,7 +355,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         if (Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
             DataSourceMessageBody messageBody = new DataSourceMessageBody();
             messageBody.setType(DataSourceMessageBody.Type.REMOVE);
-            messageBody.setId(id);
+            messageBody.setDataSourceCode(dataSource.getCode());
             messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
             this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
         }
@@ -304,10 +376,6 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
         }
         DataSourceDetailResponse dataSourceDetailResponse = new DataSourceDetailResponse();
         this.orikaMapper.map(dataSource, dataSourceDetailResponse);
-        if (StrUtil.isNotBlank(dataSource.getMaskColumn())) {
-            List<MarkColumn> markColumns = JSON.parseArray(dataSource.getMaskColumn(), MarkColumn.class);
-            dataSourceDetailResponse.setMaskColumn(markColumns == null ? Collections.emptyList() : markColumns);
-        }
         return dataSourceDetailResponse;
     }
 
@@ -342,55 +410,6 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
     }
 
     /**
-     * 获取数据源下所有的表
-     *
-     * @param request id
-     * @return r
-     */
-    @SneakyThrows
-    @Override
-    public List<SchemaTableMap> listSchemaTable(ListSchemaTableRequest request) {
-        Long id = request.getId();
-        DataSource dataSource;
-        if (id != null) {
-            dataSource = this.getById(id);
-        } else {
-            dataSource = this.lambdaQuery().eq(DataSource::getCode, request.getCode()).one();
-        }
-        if (dataSource == null) {
-            throw new ApiException("数据源不存在");
-        }
-        if (!Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
-            throw new ApiException("数据源非启用状态");
-        }
-        javax.sql.DataSource ds = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
-        try (Connection connection = ds.getConnection()) {
-            DataSourceTable dataSourceTable = this.dataSourceTableManager.get(dataSource.getType());
-            List<SchemaTable> schemaTables = dataSourceTable.schemaTable(connection);
-            Map<String, List<SchemaTable>> collected = schemaTables.stream().collect(Collectors.groupingBy(SchemaTable::getSchema));
-            return collected.entrySet().stream().map(m -> {
-                SchemaTableMap schemaTableMap = new SchemaTableMap();
-                schemaTableMap.setKey(m.getKey());
-                schemaTableMap.setTag(Constant.SCHEMA);
-                schemaTableMap.setLabel(m.getKey());
-                List<SchemaTable> value = m.getValue();
-                schemaTableMap.setChildren(value.stream().map(b -> {
-                    SchemaTableMap.Children schemaTableBody = new SchemaTableMap.Children();
-                    schemaTableBody.setKey(b.getTable());
-                    schemaTableBody.setSchema(b.getSchema());
-                    if (StrUtil.isBlank(b.getComment())) {
-                        schemaTableBody.setLabel(b.getTable());
-                    } else {
-                        schemaTableBody.setLabel(String.format("%s(%s)", b.getTable(), b.getComment()));
-                    }
-                    return schemaTableBody;
-                }).collect(Collectors.toList()));
-                return schemaTableMap;
-            }).collect(Collectors.toList());
-        }
-    }
-
-    /**
      * 数据源连接
      *
      * @param id 数据源ID
@@ -419,7 +438,7 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
     @Override
     public <T> T dataSourceConnect(DataSource dataSource, Class<T> clazz) {
         String code = dataSource.getCode();
-        String type = dataSource.getType();
+        String type = dataSource.getDataSourceType();
         String url = dataSource.getUrl();
         String username = dataSource.getUsername();
         // 解密
@@ -473,25 +492,63 @@ public class DataSourceServiceImpl extends ServiceImpl<DataSourceMapper, DataSou
      * @param request id
      * @return r
      */
-    @SneakyThrows
     @Override
     public TableDetail tableDetail(TableDetailRequest request) {
         Long id = request.getId();
-        DataSource dataSource = this.getById(id);
+        String code = request.getCode();
+        DataSource dataSource = this.getDataSource(id, code);
+        return this.tableDetail(dataSource, request.getSchema(), request.getTable());
+    }
+
+    /**
+     * 获取数据源表信息
+     *
+     * @param dataSource 数据源
+     * @param schema     库
+     * @param table      表
+     * @return r
+     */
+    @SneakyThrows
+    @Override
+    public TableDetail tableDetail(DataSource dataSource, String schema, String table) {
         if (dataSource == null) {
-            throw new ApiException("数据源不存在");
+            throw new DataSourceException("数据源不存在");
         }
         // 是否启用
         if (!Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
-            throw new ApiException("数据源非启用状态");
+            throw new DataSourceException("数据源非启用状态");
         }
-        String schema = request.getSchema();
-        String table = request.getTable();
         javax.sql.DataSource ds = this.dataSourceConnect(dataSource, javax.sql.DataSource.class);
         try (Connection connection = ds.getConnection()) {
-            DataSourceTable dataSourceTable = this.dataSourceTableManager.get(dataSource.getType());
+            DataSourceTable dataSourceTable = this.dataSourceTableManager.get(dataSource.getDataSourceType());
             return dataSourceTable.tableDetail(connection, schema, table);
         }
+    }
+
+    /**
+     * 解析数据源，优先使用id解析，如果id不存在则使用code解析
+     *
+     * @param id   数据源ID
+     * @param code 数据源编码
+     * @return 数据源
+     */
+    private DataSource getDataSource(Long id, String code) {
+        WorkspaceData workspace = Context.getWorkspace();
+        DataSource dataSource;
+        if (id != null) {
+            dataSource = this.getById(id);
+        } else {
+            dataSource = this.lambdaQuery().eq(DataSource::getCode, code)
+                    .eq(DataSource::getWorkspaceCode, workspace.getCode())
+                    .one();
+        }
+        if (dataSource == null) {
+            throw new DataSourceException("数据源不存在");
+        }
+        if (!Objects.equals(dataSource.getStatus(), Status.ENABLE.name())) {
+            throw new DataSourceException("数据源非启用状态");
+        }
+        return dataSource;
     }
 
 }

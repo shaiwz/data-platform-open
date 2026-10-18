@@ -188,7 +188,7 @@ public class DataFlowDispatchServiceImpl implements DataFlowDispatchService, App
     @Override
     public void dispatch() {
         log.info("调度数据流,当前实例:{}", this.serverManager.instanceId());
-        List<Flow> allFlows = this.flowEngine.getAllFlows();
+        List<Flow> allFlows = this.flowEngine.getAll();
         if (allFlows.isEmpty()) {
             log.info("没有数据流需要调度");
             return;

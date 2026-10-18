@@ -26,3 +26,4 @@ public class DorisDataSourceTest extends MySQLDataSourceTest {
     }
 
 }
+

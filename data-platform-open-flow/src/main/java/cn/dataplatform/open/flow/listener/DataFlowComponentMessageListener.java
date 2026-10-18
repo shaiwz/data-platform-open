@@ -70,7 +70,7 @@ public class DataFlowComponentMessageListener {
                     return;
                 }
             }
-            Flow flow = this.flowEngine.getFlow(workspaceCode, flowCode);
+            Flow flow = this.flowEngine.get(workspaceCode, flowCode);
             if (flow == null) {
                 log.info("数据流组件消息,工作空间:{}的数据流:{}不存在,不需要处理", workspaceCode, flowCode);
                 return;

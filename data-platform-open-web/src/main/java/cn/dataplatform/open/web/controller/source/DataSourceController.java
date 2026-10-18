@@ -118,16 +118,26 @@ public class DataSourceController {
     }
 
     /**
-     * 获取数据源下所有的表 树形结构
+     * 获取数据源下所有的库
      *
-     * @param request id
-     * @return r
+     * @param request id 或 code
+     * @return 库名列表
      */
-    @PostMapping("listSchemaTable")
-    public PlainResult<List<SchemaTableMap>> listSchemaTable(@RequestBody @Valid ListSchemaTableRequest request) {
-        return new PlainResult<>(this.dataSourceService.listSchemaTable(request));
+    @PostMapping("schema/list")
+    public PlainResult<List<String>> listSchema(@RequestBody @Valid ListSchemaRequest request) {
+        return new PlainResult<>(this.dataSourceService.listSchema(request));
     }
 
+    /**
+     * 获取某库下的表（支持表名模糊、limit，级联用）
+     *
+     * @param request id/code、schemaCode、tableCode、limit
+     * @return 表列表
+     */
+    @PostMapping("table/list")
+    public PlainResult<List<SchemaTable>> listTable(@RequestBody @Valid ListTableRequest request) {
+        return new PlainResult<>(this.dataSourceService.listTable(request));
+    }
 
     /**
      * 获取数据源表信息
@@ -135,7 +145,7 @@ public class DataSourceController {
      * @param request id
      * @return r
      */
-    @PostMapping("tableDetail")
+    @PostMapping("table/detail")
     public PlainResult<TableDetail> tableDetail(@RequestBody @Valid TableDetailRequest request) {
         return new PlainResult<>(this.dataSourceService.tableDetail(request));
     }

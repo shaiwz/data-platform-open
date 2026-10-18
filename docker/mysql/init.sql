@@ -179,28 +179,27 @@ create table data_source
 (
     id                     bigint auto_increment
         primary key,
-    name                   varchar(50)                  not null,
-    code                   varchar(50)                  not null,
-    workspace_code         varchar(50)                  not null,
-    type                   varchar(50)                  not null,
-    url                    varchar(500)                 not null,
+    name                   varchar(50)                           not null,
+    code                   varchar(50)                           not null,
+    workspace_code         varchar(50)                           not null,
+    data_source_type       varchar(50)                           not null,
+    url                    varchar(500)                          not null,
     username               varchar(50) null,
     password               varchar(200) null,
-    max_pool_size          int null,
     driver                 varchar(200) null,
-    status                 varchar(10) default 'ENABLE' not null,
-    create_user_id         bigint                       not null,
-    fe_nodes               varchar(600) null,
-    be_nodes               varchar(600) null,
-    nodes                  varchar(600) null,
+    properties             json null comment '连接属性',
+    status                 varchar(10) default 'ENABLE'          not null,
     partitioning_algorithm text null comment '分表算法等',
     health_check           varchar(50) null comment '是否启用健康检查，ENABLE启用',
-    mask_column            json null comment '敏感字段',
     description            varchar(500) null,
-    create_time            datetime    default (now())  not null,
-    update_time            datetime    default (now())  not null,
-    deleted                tinyint     default 0        not null comment '0未删除 1已删除'
+    create_user_id         bigint                                not null,
+    create_time            datetime    default CURRENT_TIMESTAMP not null comment '创建时间',
+    update_time            datetime    default CURRENT_TIMESTAMP not null on update CURRENT_TIMESTAMP comment '更新时间',
+    deleted                tinyint     default 0                 not null comment '0未删除 1已删除'
 ) comment '数据源';
+
+create index data_source_wc_code_idx
+    on data_source (workspace_code, code);
 
 create table debezium_save_point
 (

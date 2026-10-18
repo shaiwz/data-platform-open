@@ -1,5 +1,7 @@
 package cn.dataplatform.open.flow.store.entity;
 
+import cn.dataplatform.open.common.component.UniversalJsonTypeHandler;
+import cn.dataplatform.open.common.vo.model.KeyValue;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -8,6 +10,7 @@ import lombok.experimental.Accessors;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 〈一句话功能简述〉<br>
@@ -37,7 +40,7 @@ public class DataSource implements Serializable {
     /**
      * MySQL Doris StarRocks Oracle等
      */
-    private String type;
+    private String dataSourceType;
 
     private String url;
 
@@ -47,23 +50,23 @@ public class DataSource implements Serializable {
 
     private String driver;
 
-    private Integer maxPoolSize;
-
     /**
      * 启用,禁用
      */
     private String status;
 
     /**
-     * doris starrocks
-     */
-    private String feNodes;
-    private String beNodes;
-
-    /**
      * 分表规则
      */
     private String partitioningAlgorithm;
+
+    private String healthCheck;
+
+    /**
+     * 连接配置
+     */
+    @TableField(typeHandler = UniversalJsonTypeHandler.class)
+    private List<KeyValue> properties;
 
     private Long createUserId;
 

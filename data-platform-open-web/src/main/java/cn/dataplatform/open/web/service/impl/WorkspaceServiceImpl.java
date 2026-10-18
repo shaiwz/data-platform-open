@@ -35,6 +35,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * 〈一句话功能简述〉<br>
+ * 〈〉
+ *
+ * @author dingqianwen
+ * @date 2025/3/9
+ * @since 1.0.0
+ */
 @Slf4j
 @Service
 public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace> implements WorkspaceService {
@@ -161,7 +169,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
                 .eq(DataFlowPublish::getWorkspaceCode, workspace.getCode())
                 .eq(DataFlowPublish::getStatus, Status.ENABLE.name())
                 .exists()) {
-            throw new ApiException("工作空间下有数据流任务正在运行中，轻先停止");
+            throw new ApiException("工作空间下有数据流任务正在运行中, 轻先停止");
         }
         // 停用工作空间下的数据源
         // 查询出来
@@ -175,7 +183,7 @@ public class WorkspaceServiceImpl extends ServiceImpl<WorkspaceMapper, Workspace
                 // 移除数据源
                 DataSourceMessageBody messageBody = new DataSourceMessageBody();
                 messageBody.setType(DataSourceMessageBody.Type.REMOVE);
-                messageBody.setId(dataSource.getId());
+                messageBody.setDataSourceCode(dataSource.getCode());
                 messageBody.setWorkspaceCode(dataSource.getWorkspaceCode());
                 this.applicationEventPublisher.publishEvent(new DataSourceEvent(messageBody));
             }
