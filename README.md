@@ -6,6 +6,8 @@
 
 ### 本项目已申请外观专利+发明专利，未经明确书面授权，任何单位或个人不得对本软件进行抄袭、复制、修改、分发、逆向工程、商业用途等任何形式的非法使用。违者将面临人民币 100 万元的法定罚款及可能的法律追责。举报侵权行为可获得实际罚款金额 40% 的现金奖励。
 
+### 本项目非AI速成品，我们上线时间较久，目前若干国企以及大型互联网公司线上长期稳定使用，正式版代码经得住考验。
+
 官网：https://shaiwz.com/home <br>
 前端代码地址：https://gitee.com/shaiwz/data-platform-front-open <br>
 项目展示地址：http://dataplatform.cn/login
@@ -93,7 +95,7 @@ Token用量以及对话明细记录，方便查看AI的思考过程，排查问�
 
 查看有哪些数据流任务
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/dpa9WI.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img title='' href='https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/ZtCuEH.png' alt="none" style="width: 80%;height: 80%;border-radius: 6px;">![](https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/ZtCuEH.png)</a>
 
 ##### 数据流画布
 
@@ -185,13 +187,13 @@ ElasticSearch控制台
 
 支持版本控制、密钥、权限配置等
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/xLF1a7.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img title='' href='https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/8KcYZl.png' alt="none" style="width: 80%;height: 80%;border-radius: 6px;">![](https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/8KcYZl.png)</a>
 
 ##### 查询模板创建
 
 支持动态条件
 
-<img src="https://oss-xuxin.oss-accelerate.aliyuncs.com/dp/img/iQg63A.png" alt="none" style="width: 60%;height: 60%;border-radius: 6px;">
+<img title='' href='https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/Baz3z6.png' alt="none" style="width: 80%;height: 80%;border-radius: 6px;">![](https://oss-xuxin.oss-cn-beijing.aliyuncs.com/rp/img/Baz3z6.png)</a>
 
 支持限流、记录日志、缓存等配置
 
